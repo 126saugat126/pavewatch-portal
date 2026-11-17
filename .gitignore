@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/.venv/
+backend/.env
+
+# Local runtime data (database + uploaded files)
+backend/data/
+
+# Generated synthetic data (re-create with tools/synthetic/generate.py)
+tools/synthetic/out/
+
+# Frontend
+node_modules/
+frontend/dist/
+*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

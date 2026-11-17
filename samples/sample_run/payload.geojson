@@ -1,0 +1,696 @@
+{
+  "type": "FeatureCollection",
+  "schema_version": "1.0",
+  "run": {
+    "run_id": "PW-20260805-0932-01",
+    "company": {
+      "company_id": "northgate-roads",
+      "name": "Northgate Municipal Roads"
+    },
+    "site_name": "Public Works Yard",
+    "started_at": "2026-08-05T09:32:00-04:00",
+    "ended_at": "2026-08-05T09:49:50.769231-04:00",
+    "status": "complete",
+    "aircraft_id": "PW-01",
+    "operator": "R. Okafor",
+    "software_version": "pw-proc 0.3.0",
+    "local_frame_origin": {
+      "lat": 43.77011,
+      "lon": -79.39876,
+      "alt_m": 127.4,
+      "heading_deg": 15.0
+    },
+    "flight_path": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          -79.39876,
+          43.77011
+        ],
+        [
+          -79.3987638,
+          43.7701088
+        ],
+        [
+          -79.3985038,
+          43.7708046
+        ],
+        [
+          -79.3984403,
+          43.770798
+        ],
+        [
+          -79.3986957,
+          43.7700991
+        ],
+        [
+          -79.39864,
+          43.7700908
+        ],
+        [
+          -79.3983813,
+          43.7707807
+        ],
+        [
+          -79.3983201,
+          43.7707704
+        ],
+        [
+          -79.3985744,
+          43.7700726
+        ],
+        [
+          -79.3985189,
+          43.7700614
+        ],
+        [
+          -79.398258,
+          43.7707598
+        ],
+        [
+          -79.3982001,
+          43.7707465
+        ],
+        [
+          -79.3984612,
+          43.7700512
+        ],
+        [
+          -79.3983983,
+          43.7700393
+        ],
+        [
+          -79.39814,
+          43.7707347
+        ],
+        [
+          -79.3980816,
+          43.7707236
+        ],
+        [
+          -79.3983405,
+          43.7700285
+        ],
+        [
+          -79.3982775,
+          43.7700214
+        ],
+        [
+          -79.3980206,
+          43.7707122
+        ],
+        [
+          -79.3979662,
+          43.7706965
+        ],
+        [
+          -79.3982189,
+          43.7700031
+        ],
+        [
+          -79.39876,
+          43.77011
+        ]
+      ]
+    },
+    "data_warnings": [
+      {
+        "code": "NOT_SCANNED",
+        "message": "Area blocked by parked vehicles",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -79.3984497,
+                43.770335
+              ],
+              [
+                -79.3984271,
+                43.7703958
+              ],
+              [
+                -79.398329,
+                43.7703769
+              ],
+              [
+                -79.3983516,
+                43.770316
+              ],
+              [
+                -79.3984497,
+                43.770335
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "code": "NO_LIDAR_COVERAGE",
+        "message": "LiDAR returns dropped (wet surface glare)",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -79.3985601,
+                43.7700713
+              ],
+              [
+                -79.3983025,
+                43.7707655
+              ],
+              [
+                -79.3982562,
+                43.7707565
+              ],
+              [
+                -79.3985137,
+                43.7700624
+              ],
+              [
+                -79.3985601,
+                43.7700713
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3985183,
+          43.7705943
+        ]
+      },
+      "properties": {
+        "finding_id": "F-0001",
+        "detected_at": "2026-08-05T09:35:15.824176-04:00",
+        "defect_type": "crack",
+        "subtype": "transverse",
+        "description": "Transverse crack, 2.0 m long, up to 17 mm wide.",
+        "severity": "high",
+        "confidence": 0.92,
+        "detection_source": "image",
+        "gps_accuracy_m": 3.4,
+        "position_local_m": {
+          "x": 54.16,
+          "y": 6.26
+        },
+        "measurements": {
+          "length": {
+            "value": 2.03,
+            "unit": "m"
+          },
+          "max_width": {
+            "value": 16.7,
+            "unit": "mm"
+          }
+        },
+        "quality_warnings": [
+          {
+            "code": "POSE_LOW_CONFIDENCE",
+            "message": "Few GNSS satellites during this segment"
+          }
+        ],
+        "evidence": [
+          {
+            "file": "F-0001_raw.jpg",
+            "kind": "image_raw",
+            "caption": "Nadir frame, 5.7 m AGL",
+            "captured_at": "2026-08-05T09:35:15.824176-04:00",
+            "width_px": 2304,
+            "height_px": 1296,
+            "bounding_boxes": [
+              {
+                "label": "crack",
+                "bbox": [
+                  923.0,
+                  325.0,
+                  1172.0,
+                  892.0
+                ],
+                "confidence": 0.92
+              }
+            ]
+          },
+          {
+            "file": "F-0001_closeup.jpg",
+            "kind": "image_closeup",
+            "caption": "Close-up crop from the raw frame",
+            "captured_at": "2026-08-05T09:35:15.824176-04:00",
+            "width_px": 960,
+            "height_px": 1323,
+            "bounding_boxes": [
+              {
+                "label": "crack",
+                "bbox": [
+                  337.9,
+                  337.9,
+                  622.1,
+                  985.1
+                ],
+                "confidence": 0.92
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "finding_id": "F-0002",
+        "detected_at": "2026-08-05T09:37:31.648352-04:00",
+        "defect_type": "other",
+        "subtype": "debris",
+        "description": "Loose debris / gravel spill on the surface. Not structural, but may hide defects.",
+        "severity": "low",
+        "confidence": 0.84,
+        "detection_source": "image",
+        "gps_accuracy_m": null,
+        "position_local_m": {
+          "x": 28.35,
+          "y": 12.89
+        },
+        "measurements": {
+          "width": {
+            "value": 0.5,
+            "unit": "m"
+          }
+        },
+        "quality_warnings": [
+          {
+            "code": "GPS_UNAVAILABLE",
+            "message": "No GNSS fix; only the local position is known"
+          }
+        ],
+        "evidence": [
+          {
+            "file": "F-0002_raw.jpg",
+            "kind": "image_raw",
+            "caption": "Nadir frame, 6.0 m AGL",
+            "captured_at": "2026-08-05T09:37:31.648352-04:00",
+            "width_px": 2304,
+            "height_px": 1296,
+            "bounding_boxes": [
+              {
+                "label": "debris",
+                "bbox": [
+                  864.0,
+                  350.0,
+                  1015.0,
+                  571.0
+                ],
+                "confidence": 0.84
+              }
+            ]
+          },
+          {
+            "file": "F-0002_closeup.jpg",
+            "kind": "image_closeup",
+            "caption": "Close-up crop from the raw frame",
+            "captured_at": "2026-08-05T09:37:31.648352-04:00",
+            "width_px": 960,
+            "height_px": 1116,
+            "bounding_boxes": [
+              {
+                "label": "debris",
+                "bbox": [
+                  311.8,
+                  311.8,
+                  648.2,
+                  804.1
+                ],
+                "confidence": 0.84
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3983597,
+          43.7705889
+        ]
+      },
+      "properties": {
+        "finding_id": "F-0003",
+        "detected_at": "2026-08-05T09:39:47.472527-04:00",
+        "defect_type": "pothole",
+        "subtype": null,
+        "description": "Pothole about 46 x 59 cm, 9 mm deep. Edges ravelled; loose aggregate in the bowl.",
+        "severity": "high",
+        "confidence": 0.96,
+        "detection_source": "fused",
+        "gps_accuracy_m": 3.1,
+        "position_local_m": {
+          "x": 57.63,
+          "y": 15.38
+        },
+        "measurements": {
+          "width": {
+            "value": 0.46,
+            "unit": "m"
+          },
+          "length": {
+            "value": 0.59,
+            "unit": "m"
+          },
+          "depth": {
+            "value": 0.087,
+            "unit": "m"
+          },
+          "area": {
+            "value": 0.21,
+            "unit": "m2"
+          }
+        },
+        "quality_warnings": [],
+        "evidence": [
+          {
+            "file": "F-0003_raw.jpg",
+            "kind": "image_raw",
+            "caption": "Nadir frame, 5.9 m AGL",
+            "captured_at": "2026-08-05T09:39:47.472527-04:00",
+            "width_px": 2304,
+            "height_px": 1296,
+            "bounding_boxes": [
+              {
+                "label": "pothole",
+                "bbox": [
+                  800.0,
+                  728.0,
+                  940.0,
+                  961.0
+                ],
+                "confidence": 0.96
+              }
+            ]
+          },
+          {
+            "file": "F-0003_closeup.jpg",
+            "kind": "image_closeup",
+            "caption": "Close-up crop from the raw frame",
+            "captured_at": "2026-08-05T09:39:47.472527-04:00",
+            "width_px": 960,
+            "height_px": 1168,
+            "bounding_boxes": [
+              {
+                "label": "pothole",
+                "bbox": [
+                  323.7,
+                  323.7,
+                  636.3,
+                  843.9
+                ],
+                "confidence": 0.96
+              }
+            ]
+          },
+          {
+            "file": "F-0003_lidar_profile.png",
+            "kind": "lidar_profile",
+            "caption": "LiDAR cross-section through the deepest/highest point"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3981756,
+          43.7706271
+        ]
+      },
+      "properties": {
+        "finding_id": "F-0004",
+        "detected_at": "2026-08-05T09:42:03.296703-04:00",
+        "defect_type": "pothole",
+        "subtype": null,
+        "description": "Pothole about 85 x 104 cm, 5 mm deep. Edges ravelled; loose aggregate in the bowl.",
+        "severity": "high",
+        "confidence": 0.86,
+        "detection_source": "fused",
+        "gps_accuracy_m": 2.9,
+        "position_local_m": {
+          "x": 68.03,
+          "y": 31.97
+        },
+        "measurements": {
+          "width": {
+            "value": 0.85,
+            "unit": "m"
+          },
+          "length": {
+            "value": 1.04,
+            "unit": "m"
+          },
+          "depth": {
+            "value": 0.048,
+            "unit": "m"
+          },
+          "area": {
+            "value": 0.69,
+            "unit": "m2"
+          }
+        },
+        "quality_warnings": [],
+        "evidence": [
+          {
+            "file": "F-0004_raw.jpg",
+            "kind": "image_raw",
+            "caption": "Nadir frame, 7.0 m AGL",
+            "captured_at": "2026-08-05T09:42:03.296703-04:00",
+            "width_px": 2304,
+            "height_px": 1296,
+            "bounding_boxes": [
+              {
+                "label": "pothole",
+                "bbox": [
+                  700.0,
+                  554.0,
+                  971.0,
+                  1014.0
+                ],
+                "confidence": 0.86
+              }
+            ]
+          },
+          {
+            "file": "F-0004_closeup.jpg",
+            "kind": "image_closeup",
+            "caption": "Close-up crop from the raw frame",
+            "captured_at": "2026-08-05T09:42:03.296703-04:00",
+            "width_px": 960,
+            "height_px": 1197,
+            "bounding_boxes": [
+              {
+                "label": "pothole",
+                "bbox": [
+                  310.0,
+                  310.0,
+                  650.0,
+                  887.2
+                ],
+                "confidence": 0.86
+              }
+            ]
+          },
+          {
+            "file": "F-0004_lidar_profile.png",
+            "kind": "lidar_profile",
+            "caption": "LiDAR cross-section through the deepest/highest point"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3981115,
+          43.7706823
+        ]
+      },
+      "properties": {
+        "finding_id": "F-0005",
+        "detected_at": "2026-08-05T09:44:19.120879-04:00",
+        "defect_type": "crack",
+        "subtype": "block",
+        "description": "Block crack, 2.1 m long, up to 14 mm wide.",
+        "severity": "medium",
+        "confidence": 0.69,
+        "detection_source": "image",
+        "gps_accuracy_m": 2.5,
+        "position_local_m": {
+          "x": 75.42,
+          "y": 35.41
+        },
+        "measurements": {
+          "length": {
+            "value": 2.07,
+            "unit": "m"
+          },
+          "max_width": {
+            "value": 13.9,
+            "unit": "mm"
+          }
+        },
+        "quality_warnings": [
+          {
+            "code": "SCAN_IMAGE_MISALIGNED",
+            "message": "LiDAR and image timestamps differ by > 40 ms"
+          }
+        ],
+        "evidence": [
+          {
+            "file": "F-0005_raw.jpg",
+            "kind": "image_raw",
+            "caption": "Nadir frame, 5.9 m AGL",
+            "captured_at": "2026-08-05T09:44:19.120879-04:00",
+            "width_px": 2304,
+            "height_px": 1296,
+            "bounding_boxes": [
+              {
+                "label": "crack",
+                "bbox": [
+                  1319.0,
+                  493.0,
+                  1797.0,
+                  912.0
+                ],
+                "confidence": 0.69
+              }
+            ]
+          },
+          {
+            "file": "F-0005_closeup.jpg",
+            "kind": "image_closeup",
+            "caption": "Close-up crop from the raw frame",
+            "captured_at": "2026-08-05T09:44:19.120879-04:00",
+            "width_px": 960,
+            "height_px": 903,
+            "bounding_boxes": [
+              {
+                "label": "crack",
+                "bbox": [
+                  248.2,
+                  248.2,
+                  711.8,
+                  654.5
+                ],
+                "confidence": 0.69
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3980804,
+          43.77059
+        ]
+      },
+      "properties": {
+        "finding_id": "F-0006",
+        "detected_at": "2026-08-05T09:46:34.945055-04:00",
+        "defect_type": "raised_area",
+        "subtype": null,
+        "description": "Raised area 1.8 x 2.5 m, 29 mm high (possible heave or root intrusion).",
+        "severity": "low",
+        "confidence": 0.83,
+        "detection_source": "fused",
+        "gps_accuracy_m": 4.2,
+        "position_local_m": {
+          "x": 65.18,
+          "y": 40.62
+        },
+        "measurements": {
+          "width": {
+            "value": 1.75,
+            "unit": "m"
+          },
+          "length": {
+            "value": 2.46,
+            "unit": "m"
+          },
+          "height": {
+            "value": 0.029,
+            "unit": "m"
+          }
+        },
+        "quality_warnings": [
+          {
+            "code": "POSE_LOW_CONFIDENCE",
+            "message": "Few GNSS satellites during this segment"
+          }
+        ],
+        "evidence": [
+          {
+            "file": "F-0006_raw.jpg",
+            "kind": "image_raw",
+            "caption": "Nadir frame, 7.0 m AGL",
+            "captured_at": "2026-08-05T09:46:34.945055-04:00",
+            "width_px": 2304,
+            "height_px": 1296,
+            "bounding_boxes": [
+              {
+                "label": "raised_area",
+                "bbox": [
+                  1003.0,
+                  212.0,
+                  1473.0,
+                  976.0
+                ],
+                "confidence": 0.83
+              }
+            ]
+          },
+          {
+            "file": "F-0006_closeup.jpg",
+            "kind": "image_closeup",
+            "caption": "Close-up crop from the raw frame",
+            "captured_at": "2026-08-05T09:46:34.945055-04:00",
+            "width_px": 960,
+            "height_px": 1005,
+            "bounding_boxes": [
+              {
+                "label": "raised_area",
+                "bbox": [
+                  297.8,
+                  164.4,
+                  662.2,
+                  756.8
+                ],
+                "confidence": 0.83
+              }
+            ]
+          },
+          {
+            "file": "F-0006_lidar_profile.png",
+            "kind": "lidar_profile",
+            "caption": "LiDAR cross-section through the deepest/highest point"
+          }
+        ]
+      }
+    }
+  ]
+}
