@@ -146,10 +146,12 @@ def get_run(db: Session, org: m.Organization, run_id: str) -> s.RunDetail:
 
 
 def _first_thumb(storage: Storage, f: m.Finding) -> str | None:
-    for ev in f.evidence:
-        if ev.thumb_key:
-            return storage.url(ev.thumb_key)
-    return None
+    """List thumbnail: a close-up shows the defect best; otherwise the first image."""
+    images = [ev for ev in f.evidence if ev.thumb_key]
+    if not images:
+        return None
+    best = next((ev for ev in images if ev.kind == "image_closeup"), images[0])
+    return storage.url(best.thumb_key)
 
 
 def _list_item_fields(storage: Storage, f: m.Finding) -> dict:

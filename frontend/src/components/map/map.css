@@ -1,0 +1,148 @@
+/* Finding markers: severity = fill colour + size + legend label; type = letter glyph. */
+.pw-marker {
+  cursor: pointer;
+  outline: none;
+}
+.pw-marker__dot {
+  --size: 22px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--sev);
+  color: var(--sev-ink);
+  font: 700 11px/1 system-ui, sans-serif;
+  box-shadow:
+    0 0 0 2px var(--pw-marker-ring),
+    0 0 0 3px var(--pw-marker-outline),
+    0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 120ms ease;
+  user-select: none;
+}
+.pw-marker__dot[data-sev='high'] {
+  --size: 26px;
+  --sev: var(--pw-sev-high);
+  --sev-ink: #ffffff;
+  font-size: 12px;
+}
+.pw-marker__dot[data-sev='medium'] {
+  --size: 22px;
+  --sev: var(--pw-sev-medium);
+  --sev-ink: #0b0b0b;
+}
+.pw-marker__dot[data-sev='low'] {
+  --size: 18px;
+  --sev: var(--pw-sev-low);
+  --sev-ink: #ffffff;
+  font-size: 10px;
+}
+.pw-marker__dot[data-sev='none'] {
+  --sev: var(--pw-sev-none);
+  --sev-ink: #0b0b0b;
+}
+/* No GPS: hollow marker with a dashed severity ring */
+.pw-marker__dot[data-approx='true'] {
+  background: var(--pw-marker-ring);
+  color: var(--pw-ink);
+  border: 3px dashed var(--sev);
+}
+.pw-marker.is-hovered .pw-marker__dot,
+.pw-marker:focus-visible .pw-marker__dot {
+  transform: scale(1.3);
+}
+.pw-marker:focus-visible .pw-marker__dot {
+  box-shadow:
+    0 0 0 2px var(--pw-marker-ring),
+    0 0 0 4px var(--mantine-color-blue-filled);
+}
+
+.pw-start {
+  font: 600 10px/1 system-ui, sans-serif;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--pw-ink);
+  color: var(--pw-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+/* Popups follow the app theme */
+.pw-popup .maplibregl-popup-content {
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: var(--mantine-shadow-md);
+  font: 13px/1.35 system-ui, sans-serif;
+}
+.pw-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.pw-popup.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.pw-popup.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--mantine-color-default-border);
+}
+.pw-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.pw-popup.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.pw-popup.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--mantine-color-default-border);
+}
+.pw-popup__title {
+  font-weight: 650;
+}
+.pw-popup__meta {
+  color: var(--mantine-color-dimmed);
+  margin-top: 2px;
+}
+.pw-popup__note {
+  color: var(--mantine-color-dimmed);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* Legend swatches */
+.pw-legend-dot {
+  display: inline-block;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--sev);
+  box-shadow: 0 0 0 1px var(--pw-marker-outline);
+}
+.pw-legend-dot[data-sev='high'] {
+  --sev: var(--pw-sev-high);
+  width: 16px;
+  height: 16px;
+}
+.pw-legend-dot[data-sev='medium'] {
+  --sev: var(--pw-sev-medium);
+}
+.pw-legend-dot[data-sev='low'] {
+  --sev: var(--pw-sev-low);
+  width: 11px;
+  height: 11px;
+}
+.pw-legend-dot[data-approx='true'] {
+  background: transparent;
+  border: 2px dashed var(--pw-ink-2);
+  box-shadow: none;
+}
+.pw-legend-line {
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--pw-series);
+}
+.pw-legend-area {
+  display: inline-block;
+  width: 18px;
+  height: 12px;
+  border: 1.5px dashed var(--pw-ink-2);
+  background: color-mix(in srgb, var(--pw-ink-2) 14%, transparent);
+  border-radius: 2px;
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}

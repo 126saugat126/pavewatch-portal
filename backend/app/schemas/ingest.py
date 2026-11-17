@@ -53,7 +53,11 @@ class Company(Strict):
 
 
 class LocalFrameOrigin(Strict):
-    """Where the drone's local x/y frame starts. x points along ``heading_deg`` (0 = north, clockwise)."""
+    """Where the drone's local x/y frame starts.
+
+    x points along ``heading_deg`` (0 = north, clockwise); y points 90 degrees clockwise
+    from x (to the right, as in PX4's forward-right-down body frame). Units are metres.
+    """
 
     lat: Latitude
     lon: Longitude

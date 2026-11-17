@@ -1,0 +1,169 @@
+/*
+ * Data-viz tokens. Severity uses the reserved status colours:
+ *   low = neutral, medium = warning, high = critical  (validated: CVD dE 24.4, normal dE 28.4)
+ * and is always paired with an icon + label. Amber sits below 3:1 on light
+ * surfaces, so markers carry a dark outline and every badge has a text label.
+ */
+:root {
+  --pw-sev-high: #d03b3b;
+  --pw-sev-medium: #fab219;
+  --pw-sev-low: #898781;
+  --pw-sev-none: #c3c2b7;
+  --pw-status-good: #0ca30c;
+  --pw-status-warning: #fab219;
+
+  --pw-series: #2a78d6; /* single-hue bars, flight path */
+  --pw-surface: #ffffff;
+  --pw-ink: #0b0b0b;
+  --pw-ink-2: #52514e;
+  --pw-muted: #898781;
+  --pw-hairline: #e1e0d9;
+  --pw-marker-ring: #ffffff;
+  --pw-marker-outline: rgba(11, 11, 11, 0.55);
+  --pw-box: #4dabf7;
+  --pw-box-halo: rgba(0, 0, 0, 0.65);
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  --pw-series: #3987e5;
+  --pw-surface: #1a1b1e;
+  --pw-ink: #f0efec;
+  --pw-ink-2: #c3c2b7;
+  --pw-hairline: #2c2c2a;
+  --pw-marker-ring: #1a1a19;
+  --pw-marker-outline: rgba(255, 255, 255, 0.7);
+}
+
+body {
+  background: var(--mantine-color-body);
+}
+
+.mantine-Badge-root {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Cards / rows that navigate */
+.pw-clickable {
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease,
+    border-color 120ms ease;
+}
+.pw-card-link:hover {
+  border-color: var(--mantine-color-blue-filled);
+  box-shadow: var(--mantine-shadow-sm);
+  transform: translateY(-1px);
+}
+.pw-card-link:focus-visible,
+.pw-row:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-filled);
+  outline-offset: 2px;
+}
+.pw-row:hover,
+.pw-row[data-active='true'] {
+  background-color: var(--mantine-color-default-hover);
+}
+
+/* Letter glyph that matches the map markers */
+.pw-glyph {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--mantine-color-default-border);
+  font: 700 11px/1 system-ui, sans-serif;
+  color: var(--mantine-color-text);
+}
+
+/* Severity stacked bar: 2px surface gaps, 4px rounded ends */
+.pw-sevbar {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  width: 100%;
+  min-width: 60px;
+  max-width: 140px;
+}
+.pw-sevbar > span {
+  border-radius: 4px;
+  min-width: 4px;
+}
+.pw-sevbar[data-empty='true'] {
+  background: var(--mantine-color-default-border);
+  border-radius: 4px;
+}
+
+/* Single-hue bar list (defect types) */
+.pw-barlist-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 150px) 1fr 32px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: var(--mantine-radius-sm);
+  width: 100%;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.pw-barlist-row:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+.pw-barlist-row[data-dimmed='true'] {
+  opacity: 0.45;
+}
+.pw-barlist-track {
+  height: 10px;
+}
+.pw-barlist-bar {
+  height: 100%;
+  background: var(--pw-series);
+  border-radius: 0 4px 4px 0;
+  min-width: 3px;
+}
+
+.pw-thumb {
+  width: 72px;
+  height: 44px;
+  flex: none;
+  object-fit: cover;
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-default-border);
+}
+
+.pw-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin progress bar while a lazy page chunk loads */
+.pw-nav-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  overflow: hidden;
+}
+.pw-nav-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--mantine-color-blue-filled);
+  animation: pw-progress 900ms ease-in-out infinite;
+}
+@keyframes pw-progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
