@@ -29,8 +29,10 @@ export function useMapLibre(
     const m = new MapLibreMap({
       container: el,
       style: baseStyle(),
-      center: [-79.38, 43.65],
-      zoom: 16,
+      // Fallback view only; callers pass `bounds` or `center`/`zoom` so the first tiles
+      // requested are already the survey area.
+      center: [0, 20],
+      zoom: 1.5,
       maxZoom: 21,
       attributionControl: { compact: true },
       dragRotate: false,
@@ -40,7 +42,16 @@ export function useMapLibre(
     m.touchZoomRotate.disableRotation();
     m.addControl(new NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new ScaleControl({ unit: 'metric', maxWidth: 100 }), 'bottom-left');
-    m.on("load", () => setMap(m));
+    // Ready as soon as the style is parsed - NOT on 'load', which waits for every base
+    // tile and would delay overlays/markers on a slow tile server.
+    let ready = false;
+    const markReady = () => {
+      if (ready) return;
+      ready = true;
+      setMap(m);
+    };
+    if (m.isStyleLoaded()) markReady();
+    else m.once('style.load', markReady);
     const ro = new ResizeObserver(() => m.resize());
     ro.observe(el);
     return () => {

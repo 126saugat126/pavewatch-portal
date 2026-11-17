@@ -128,10 +128,17 @@ export default function FindingDetailPage() {
     ['b', () => setShowBoxes((s) => !s)],
   ]);
 
+  // Keep `position` referentially stable for the mini map (a new object would make it
+  // re-fit and discard the user's zoom), so depend on the values, not the objects.
+  const lat = f?.lat ?? null;
+  const lon = f?.lon ?? null;
+  const lx = f?.local_x_m ?? null;
+  const ly = f?.local_y_m ?? null;
+  const origin = run.data?.local_frame_origin;
+  const hasFinding = !!f;
   const position = useMemo(
-    () => (f ? findingPosition(f, run.data?.local_frame_origin) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [f?.finding_id, f?.lat, f?.lon, run.data?.local_frame_origin],
+    () => (hasFinding ? findingPosition({ lat, lon, local_x_m: lx, local_y_m: ly }, origin) : null),
+    [hasFinding, lat, lon, lx, ly, origin],
   );
 
   if (q.error) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;

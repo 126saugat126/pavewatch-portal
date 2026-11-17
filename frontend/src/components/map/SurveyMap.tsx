@@ -24,12 +24,6 @@ interface Props {
 export function SurveyMap({ run, findings, allFindings, hoveredId, onHover, onOpen, height }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [base, setBase] = useState<BaseLayer>('map');
-  const { map, scheme } = useMapLibre(ref, { base });
-  const markers = useRef(new Map<string, { marker: Marker; el: HTMLElement; pos: Position; f: FindingListItem }>());
-  const popup = useRef(makePopup());
-  const cb = useRef({ onHover, onOpen });
-  cb.current = { onHover, onOpen };
-
   const origin = run.local_frame_origin;
 
   const bounds = useMemo(() => {
@@ -43,6 +37,16 @@ export function SurveyMap({ run, findings, allFindings, hoveredId, onHover, onOp
     if (origin) coords.push([origin.lon, origin.lat]);
     return boundsOf(coords);
   }, [run, allFindings, origin]);
+
+  // Start already framed on the survey, so the first tiles fetched are the right ones.
+  const { map, scheme } = useMapLibre(ref, {
+    base,
+    ...(bounds ? { bounds: bounds as LngLatBoundsLike, fitBoundsOptions: { padding: 48, maxZoom: 20 } } : {}),
+  });
+  const markers = useRef(new Map<string, { marker: Marker; el: HTMLElement; pos: Position; f: FindingListItem }>());
+  const popup = useRef(makePopup());
+  const cb = useRef({ onHover, onOpen });
+  cb.current = { onHover, onOpen };
 
   const fit = useCallback(
     (animate = true) => {

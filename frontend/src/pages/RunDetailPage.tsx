@@ -203,19 +203,25 @@ export default function RunDetailPage() {
   useDocumentTitle(r ? `${r.site_name} · ${fmtDate(r.started_at)} · PaveWatch` : 'Survey · PaveWatch');
 
   const all = useMemo(() => findings.data ?? [], [findings.data]);
+  // Filter arrays are re-parsed from the URL on every render, so memoise on their
+  // string form. A stable `shown` array keeps the map from rebuilding its markers.
+  const typesKey = filters.types.join(',');
+  const sevsKey = filters.sevs.join(',');
+  const { warnOnly, sort } = filters;
   const shown = useMemo(() => {
+    const types = typesKey ? typesKey.split(',') : [];
+    const sevs = sevsKey ? sevsKey.split(',') : [];
     const out = all.filter(
       (f) =>
-        (!filters.types.length || filters.types.includes(f.defect_type)) &&
-        (!filters.sevs.length || filters.sevs.includes(f.severity ?? 'none')) &&
-        (!filters.warnOnly || f.warning_codes.length > 0),
+        (!types.length || types.includes(f.defect_type)) &&
+        (!sevs.length || sevs.includes(f.severity ?? 'none')) &&
+        (!warnOnly || f.warning_codes.length > 0),
     );
-    if (filters.sort === 'severity') {
+    if (sort === 'severity') {
       out.sort((a, b) => severityMeta(b.severity).rank - severityMeta(a.severity).rank || a.finding_id.localeCompare(b.finding_id));
     }
     return out;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [all, filters.types.join(), filters.sevs.join(), filters.warnOnly, filters.sort]);
+  }, [all, typesKey, sevsKey, warnOnly, sort]);
 
   const typeCounts = useMemo(() => {
     const c: Record<string, number> = {};
