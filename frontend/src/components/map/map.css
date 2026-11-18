@@ -17,7 +17,9 @@
     0 0 0 2px var(--pw-marker-ring),
     0 0 0 3px var(--pw-marker-outline),
     0 1px 4px rgba(0, 0, 0, 0.35);
-  transition: transform 120ms ease;
+  transition:
+    transform var(--pw-dur-2) var(--pw-ease),
+    box-shadow var(--pw-dur-2) var(--pw-ease);
   user-select: none;
 }
 .pw-marker__dot[data-sev='high'] {
@@ -47,23 +49,31 @@
   color: var(--pw-ink);
   border: 3px dashed var(--sev);
 }
+/* Selection / hover = forest-teal ring (never a severity colour) */
+.pw-marker.is-selected {
+  z-index: 4;
+}
+.pw-marker.is-selected .pw-marker__dot {
+  transform: scale(1.35);
+  box-shadow:
+    0 0 0 2px var(--pw-marker-ring),
+    0 0 0 5px var(--pw-select),
+    0 0 0 11px color-mix(in srgb, var(--pw-select) 22%, transparent),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+}
 .pw-marker.is-hovered .pw-marker__dot,
 .pw-marker:focus-visible .pw-marker__dot {
   transform: scale(1.3);
   box-shadow:
     0 0 0 2px var(--pw-marker-ring),
-    0 0 0 4px var(--pw-lime);
-}
-.pw-marker:focus-visible .pw-marker__dot {
-  box-shadow:
-    0 0 0 2px var(--pw-marker-ring),
-    0 0 0 4px var(--pw-lime);
+    0 0 0 5px var(--pw-select),
+    0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .pw-start {
   font: 600 10px/1 var(--pw-font-sans);
-  padding: 3px 6px;
-  border-radius: 0;
+  padding: 4px 7px;
+  border-radius: 6px;
   background: var(--pw-ink);
   color: var(--pw-ground);
   letter-spacing: 0.04em;
@@ -76,9 +86,9 @@
   background: var(--pw-tile);
   color: var(--pw-ink);
   border: 1px solid var(--pw-hairline);
-  border-radius: 2px;
+  border-radius: 10px;
   padding: 10px 12px;
-  box-shadow: none;
+  box-shadow: var(--pw-shadow-pop);
   font: 13px/1.35 var(--pw-font-sans);
 }
 .pw-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
@@ -135,14 +145,15 @@
   display: inline-block;
   width: 22px;
   height: 3px;
-  background: var(--pw-accent);
+  border-radius: 2px;
+  background: var(--pw-geo);
 }
 .pw-legend-area {
   display: inline-block;
   width: 18px;
   height: 12px;
-  border: 1.5px dashed var(--pw-ink-2);
-  background: color-mix(in srgb, var(--pw-ink-2) 14%, transparent);
+  border: 1.5px dashed var(--pw-warn-ink);
+  background: var(--pw-warn-wash);
   border-radius: 2px;
 }
 

@@ -1,8 +1,20 @@
-import { QueryClient, queryOptions } from '@tanstack/react-query';
+import { QueryCache, QueryClient, queryOptions } from '@tanstack/react-query';
+import { toast } from '../lib/toast';
 import { ApiError, enc, getJson } from './client';
 import type { FindingDetail, FindingListItem, OrganizationSummary, OrgRef, RunDetail, RunSummary } from './types';
 
+/** List pages re-check the server this often, so new uploads appear without a reload. */
+export const LIVE_REFRESH_MS = 60_000;
+
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    // First-load errors are shown in the page itself. A failed *background* refresh keeps the
+    // data on screen, so tell the user with a toast instead (one at a time).
+    onError: (err, query) => {
+      if (query.state.data === undefined) return;
+      toast.warning('Could not refresh', `Showing the last data received. ${err instanceof Error ? err.message : ''}`, 'refresh-failed');
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 60_000,
@@ -17,6 +29,7 @@ export const orgsQuery = () =>
   queryOptions({
     queryKey: ['orgs'],
     queryFn: ({ signal }) => getJson<OrganizationSummary[]>('/orgs', signal),
+    refetchInterval: LIVE_REFRESH_MS,
   });
 
 export const orgQuery = (orgId: string) =>
@@ -29,6 +42,7 @@ export const runsQuery = (orgId: string) =>
   queryOptions({
     queryKey: ['runs', orgId],
     queryFn: ({ signal }) => getJson<RunSummary[]>(`/orgs/${enc(orgId)}/runs`, signal),
+    refetchInterval: LIVE_REFRESH_MS,
   });
 
 export const runQuery = (orgId: string, runId: string) =>
@@ -63,7 +77,6 @@ export function preloadImage(url: string | null | undefined) {
 }
 
 export const loadRunPage = () => import('../pages/RunDetailPage');
-export const loadFindingPage = () => import('../pages/FindingDetailPage');
 
 export function prefetchRun(orgId: string, runId: string) {
   void loadRunPage();
@@ -72,7 +85,7 @@ export function prefetchRun(orgId: string, runId: string) {
 }
 
 export function prefetchFinding(orgId: string, runId: string, findingId: string, withImages = false) {
-  void loadFindingPage();
+  void loadRunPage();
   const p = queryClient.prefetchQuery(findingQuery(orgId, runId, findingId));
   if (withImages) {
     void p.then(() => {

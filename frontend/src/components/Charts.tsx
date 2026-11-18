@@ -2,6 +2,7 @@ import { Group, Stack, Text, Tooltip } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { DEFECT_TYPES, SEVERITIES, defectMeta, severityMeta } from '../lib/defects';
 import { Glyph } from './Badges';
+import { AnimatedValue } from './Motion';
 
 /** Severity mix as a thin segmented bar (high -> low), with the counts in the tooltip and aria-label. */
 export function SeverityBar({ counts }: { counts: Record<string, number> }) {
@@ -37,7 +38,9 @@ export function StatTile({
         {icon}
         {label}
       </span>
-      <span className="pw-stat-num">{value}</span>
+      <span className="pw-stat-num">
+        <AnimatedValue value={value} />
+      </span>
       {hint && <span className="pw-stat__hint">{hint}</span>}
     </div>
   );
@@ -47,7 +50,9 @@ export function StatTile({
 export function Figure({ label, value, icon }: { label: string; value: ReactNode; icon?: ReactNode }) {
   return (
     <div className="pw-figure">
-      <span className="pw-stat-num">{value}</span>
+      <span className="pw-stat-num">
+        <AnimatedValue value={value} />
+      </span>
       <span className="pw-figure__label pw-eyebrow pw-dim">
         {icon}
         {label}

@@ -16,12 +16,14 @@ interface Props {
   /** All findings in the run - used once to frame the map. */
   allFindings: FindingListItem[];
   hoveredId: string | null;
+  /** The finding open in the detail panel (shared with the list and the URL). */
+  selectedId?: string | null;
   onHover: (id: string | null, fromMap: boolean) => void;
   onOpen: (id: string) => void;
   height: number | string;
 }
 
-export function SurveyMap({ run, findings, allFindings, hoveredId, onHover, onOpen, height }: Props) {
+export function SurveyMap({ run, findings, allFindings, hoveredId, selectedId = null, onHover, onOpen, height }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [base, setBase] = useState<BaseLayer>('map');
   const origin = run.local_frame_origin;
@@ -186,6 +188,16 @@ export function SurveyMap({ run, findings, allFindings, hoveredId, onHover, onOp
       p.remove();
     }
   }, [hoveredId, map, findings]);
+
+  // Selection ring on the open finding. The map only moves if that marker is out of view,
+  // so the user keeps their zoom and position.
+  useEffect(() => {
+    markers.current.forEach(({ el }, id) => el.classList.toggle('is-selected', id === selectedId));
+    const hit = selectedId ? markers.current.get(selectedId) : undefined;
+    if (map && hit && !map.getBounds().contains([hit.pos.lon, hit.pos.lat])) {
+      map.easeTo({ center: [hit.pos.lon, hit.pos.lat], duration: 500 });
+    }
+  }, [selectedId, map, findings]);
 
   const located = allFindings.filter((f) => findingPosition(f, origin)).length;
   const hasGeo = !!bounds;

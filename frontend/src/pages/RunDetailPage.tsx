@@ -3,7 +3,6 @@ import {
   Button,
   Chip,
   Group,
-  ScrollArea,
   SegmentedControl,
   Skeleton,
   Stack,
@@ -12,7 +11,7 @@ import {
   Text,
   Tooltip,
 } from '@mantine/core';
-import { useDocumentTitle, useMediaQuery } from '@mantine/hooks';
+import { useDocumentTitle } from '@mantine/hooks';
 import {
   IconAlertOctagon,
   IconAlertTriangle,
@@ -23,18 +22,21 @@ import {
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { Link, useLocation, useMatch, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { findingsQuery, prefetchFinding, runQuery } from '../api/queries';
 import type { FindingListItem, RunDetail } from '../api/types';
 import { DefectLabel, RunStatus, SeverityInline } from '../components/Badges';
 import { StatTile, TypeBarList } from '../components/Charts';
 import { MapLegend, SurveyMap } from '../components/map/SurveyMap';
+import { FindingPanel } from '../components/FindingPanel';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyBlock, ErrorState } from '../components/States';
 import { DataWarningsList } from '../components/Warnings';
 import { DEFECT_TYPES, SEVERITIES, defectMeta, severityMeta, warningMeta } from '../lib/defects';
 import { fmtDate, fmtDateTime, fmtDuration, fmtTime, measurementSummary } from '../lib/format';
 import { findingPosition } from '../lib/geo';
+import { MOTION } from '../lib/motion';
 
 // ------------------------------------------------------------------ filters (kept in the URL)
 
@@ -71,6 +73,7 @@ function FindingRow({
   active,
   approx,
   onHover,
+  onSelect,
   rowRef,
   prefetch,
 }: {
@@ -79,6 +82,7 @@ function FindingRow({
   active: boolean;
   approx: boolean | null;
   onHover: (id: string | null) => void;
+  onSelect: (id: string) => void;
   rowRef: (el: HTMLAnchorElement | null) => void;
   prefetch: () => void;
 }) {
@@ -89,6 +93,12 @@ function FindingRow({
       to={to}
       className="pw-ledger-row pw-findrow"
       data-active={active}
+      onClick={(e) => {
+        // Plain click opens the panel; ctrl/cmd/middle-click still open the link in a new tab.
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        onSelect(f.finding_id);
+      }}
       onMouseEnter={() => {
         onHover(f.finding_id);
         prefetch();
@@ -172,21 +182,37 @@ function RunDetails({ run }: { run: RunDetail }) {
   );
 }
 
+
 // ------------------------------------------------------------------ page
+
+const enc = encodeURIComponent;
+const SWAP = { duration: MOTION.s.base, ease: MOTION.ease };
 
 export default function RunDetailPage() {
   const { orgId = '', runId = '' } = useParams();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const run = useQuery(runQuery(orgId, runId));
   const findings = useQuery(findingsQuery(orgId, runId));
   const filters = useFilters();
   const [hover, setHover] = useState<{ id: string; fromMap: boolean } | null>(null);
   const rowRefs = useRef(new Map<string, HTMLAnchorElement>());
-  const wide = useMediaQuery('(min-width: 75em)');
-  const panelHeight = wide ? 560 : 420;
+  const workRef = useRef<HTMLDivElement>(null);
+
+  // The open finding is part of the URL (/findings/:id), so it can be linked, reloaded and reached with Back.
+  const selectedId = useMatch('/orgs/:orgId/runs/:runId/findings/:findingId')?.params.findingId ?? null;
+  const selectedRef = useRef(selectedId);
+  selectedRef.current = selectedId;
+  // Set when this page opened the panel with a history push, so closing can step back instead of piling up entries.
+  const openedAt = useRef<string | null>(null);
+  const lastSelected = useRef<string | null>(null);
 
   const r = run.data;
-  useDocumentTitle(r ? `${r.site_name} · ${fmtDate(r.started_at)} · PaveWatch` : 'Survey · PaveWatch');
+  useDocumentTitle(
+    r
+      ? `${selectedId ? `${selectedId} · ` : ''}${r.site_name} · ${fmtDate(r.started_at)} · PaveWatch`
+      : 'Survey · PaveWatch',
+  );
 
   const all = useMemo(() => findings.data ?? [], [findings.data]);
   // Filter arrays are re-parsed from the URL on every render, so memoise on their
@@ -208,6 +234,7 @@ export default function RunDetailPage() {
     }
     return out;
   }, [all, typesKey, sevsKey, warnOnly, sort]);
+  const order = useMemo(() => shown.map((f) => f.finding_id), [shown]);
 
   const typeCounts = useMemo(() => {
     const c: Record<string, number> = {};
@@ -220,17 +247,58 @@ export default function RunDetailPage() {
     return c;
   }, [all]);
 
-  const findingPath = useCallback(
-    (fid: string) => `/orgs/${encodeURIComponent(orgId)}/runs/${encodeURIComponent(runId)}/findings/${encodeURIComponent(fid)}`,
-    [orgId, runId],
+  // ---- selection: one place that map, list and panel all go through
+  const base = `/orgs/${enc(orgId)}/runs/${enc(runId)}`;
+  const findingPath = useCallback((fid: string) => `${base}/findings/${enc(fid)}${search}`, [base, search]);
+
+  const select = useCallback(
+    (id: string) => {
+      const opening = selectedRef.current === null;
+      if (opening) openedAt.current = search;
+      // Opening adds a history entry (Back closes the panel); moving between findings replaces it.
+      navigate(findingPath(id), { replace: !opening, preventScrollReset: true });
+    },
+    [navigate, findingPath, search],
   );
+  const close = useCallback(() => {
+    if (openedAt.current !== null && openedAt.current === search) {
+      navigate(-1);
+    } else {
+      navigate(`${base}${search}`, { replace: true, preventScrollReset: true });
+    }
+    openedAt.current = null;
+  }, [navigate, base, search]);
+
+  useEffect(() => {
+    if (selectedId) lastSelected.current = selectedId;
+    else openedAt.current = null;
+  }, [selectedId]);
+
+  // On a stacked (narrow) layout the panel sits below the map: bring it into view when a finding opens.
+  useEffect(() => {
+    if (!selectedId || !workRef.current) return;
+    if (!window.matchMedia('(max-width: 1099px)').matches) return;
+    if (workRef.current.getBoundingClientRect().top > window.innerHeight * 0.6) {
+      workRef.current.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  }, [selectedId]);
+
   const onMapHover = useCallback((id: string | null, fromMap: boolean) => setHover(id ? { id, fromMap } : null), []);
-  const onOpen = useCallback((id: string) => navigate(findingPath(id)), [navigate, findingPath]);
 
   // When a marker is hovered, bring its row into view.
   useEffect(() => {
     if (hover?.fromMap) rowRefs.current.get(hover.id)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [hover]);
+
+  // After closing the panel, land back on the row that was open.
+  const restoreRow = () => {
+    const id = lastSelected.current;
+    if (!id) return;
+    lastSelected.current = null;
+    const row = rowRefs.current.get(id);
+    row?.scrollIntoView({ block: 'nearest' });
+    row?.focus({ preventScroll: true });
+  };
 
   const toggleType = (t: string) =>
     filters.set('type', filters.types.includes(t) ? filters.types.filter((x) => x !== t) : [...filters.types, t]);
@@ -248,7 +316,6 @@ export default function RunDetailPage() {
     );
   }
 
-  const orgPath = `/orgs/${encodeURIComponent(orgId)}`;
   const anyApprox = all.some((f) => findingPosition(f, r?.local_frame_origin)?.approx);
   const high = sevCounts.high ?? 0;
   const presentTypes = [...DEFECT_TYPES.filter((t) => typeCounts[t]), ...Object.keys(typeCounts).filter((t) => !(DEFECT_TYPES as readonly string[]).includes(t))];
@@ -257,11 +324,6 @@ export default function RunDetailPage() {
     <>
       <PageHeader
         loading={!r}
-        crumbs={[
-          { label: 'Companies', to: '/' },
-          { label: r?.organization.name ?? '…', to: orgPath },
-          { label: r ? `${r.site_name} · ${fmtDate(r.started_at)}` : '…' },
-        ]}
         title={r?.site_name}
         subtitle={
           r && (
@@ -359,7 +421,8 @@ export default function RunDetailPage() {
         </div>
       )}
 
-      <div className="pw-grid pw-split-7-5">
+      {/* Workspace: the map and the findings list / open finding share one selection */}
+      <div className="pw-grid pw-split-7-5 pw-workspace">
         <div style={{ minWidth: 0 }}>
           {r && findings.data ? (
             <>
@@ -368,71 +431,106 @@ export default function RunDetailPage() {
                 findings={shown}
                 allFindings={all}
                 hoveredId={hover?.id ?? null}
+                selectedId={selectedId}
                 onHover={onMapHover}
-                onOpen={onOpen}
-                height={panelHeight}
+                onOpen={select}
+                height="var(--pw-map-h)"
               />
               <MapLegend showApprox={anyApprox} />
             </>
           ) : (
-            <Skeleton h={panelHeight} />
+            <Skeleton h="var(--pw-map-h)" />
           )}
         </div>
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0 }} className="pw-work" ref={workRef} data-open={selectedId ? '' : undefined}>
           {!findings.data ? (
-            <Skeleton h={panelHeight} />
+            <Skeleton h="100%" />
           ) : all.length === 0 ? (
             <EmptyBlock icon={<IconMoodEmpty size={22} />} title="No defects detected in this survey">
               Check the survey data notes below: areas that were not scanned, or scanned with poor data, can still
               contain defects.
             </EmptyBlock>
           ) : (
-            <section className="pw-tile pw-tile--flush" aria-label="Findings">
-              <Group justify="space-between" px="var(--pw-tile-pad)" py={20} wrap="nowrap">
-                <h2 className="pw-tile__title">Findings</h2>
-                <SegmentedControl
-                  size="xs"
-                  value={filters.sort}
-                  onChange={(v) => filters.set('sort', v === 'severity' ? 'severity' : null)}
-                  data={[
-                    { label: 'By ID', value: 'id' },
-                    { label: 'By severity', value: 'severity' },
-                  ]}
-                  aria-label="Sort findings"
-                />
-              </Group>
-              <ScrollArea h={panelHeight - 76} type="auto" offsetScrollbars={false}>
-                {shown.length === 0 ? (
-                  <Stack align="center" p="xl" gap="xs">
-                    <Text fz="sm" c="dimmed">
-                      No findings match these filters.
-                    </Text>
-                    <Button size="xs" variant="default" onClick={filters.clear}>
-                      Clear filters
-                    </Button>
-                  </Stack>
-                ) : (
-                  shown.map((f) => {
-                    const pos = findingPosition(f, r?.local_frame_origin);
-                    return (
-                      <FindingRow
-                        key={f.finding_id}
-                        f={f}
-                        to={findingPath(f.finding_id)}
-                        active={hover?.id === f.finding_id}
-                        approx={pos ? pos.approx : null}
-                        onHover={(id) => setHover(id ? { id, fromMap: false } : null)}
-                        prefetch={() => prefetchFinding(orgId, runId, f.finding_id, true)}
-                        rowRef={(el) => {
-                          if (el) rowRefs.current.set(f.finding_id, el);
-                          else rowRefs.current.delete(f.finding_id);
-                        }}
+            <AnimatePresence mode="wait" initial={false}>
+              {selectedId ? (
+                <motion.div
+                  key="panel"
+                  className="pw-work__pane"
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 16, transition: { duration: MOTION.s.fast, ease: MOTION.ease } }}
+                  transition={SWAP}
+                >
+                  <FindingPanel
+                    orgId={orgId}
+                    runId={runId}
+                    findingId={selectedId}
+                    run={r}
+                    order={order}
+                    onSelect={select}
+                    onClose={close}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="list"
+                  className="pw-work__pane"
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16, transition: { duration: MOTION.s.fast, ease: MOTION.ease } }}
+                  transition={SWAP}
+                  onAnimationComplete={restoreRow}
+                >
+                  <section className="pw-tile pw-tile--flush pw-work__list" aria-label="Findings">
+                    <Group justify="space-between" px="var(--pw-tile-pad)" py={20} wrap="nowrap" style={{ flex: 'none' }}>
+                      <h2 className="pw-tile__title">Findings</h2>
+                      <SegmentedControl
+                        size="xs"
+                        value={filters.sort}
+                        onChange={(v) => filters.set('sort', v === 'severity' ? 'severity' : null)}
+                        data={[
+                          { label: 'By ID', value: 'id' },
+                          { label: 'By severity', value: 'severity' },
+                        ]}
+                        aria-label="Sort findings"
                       />
-                    );
-                  })
-                )}
-              </ScrollArea>
-            </section>
+                    </Group>
+                    <div className="pw-work__scroll">
+                      {shown.length === 0 ? (
+                        <Stack align="center" p="xl" gap="xs">
+                          <Text fz="sm" c="dimmed">
+                            No findings match these filters.
+                          </Text>
+                          <Button size="xs" variant="default" onClick={filters.clear}>
+                            Clear filters
+                          </Button>
+                        </Stack>
+                      ) : (
+                        shown.map((f) => {
+                          const pos = findingPosition(f, r?.local_frame_origin);
+                          return (
+                            <FindingRow
+                              key={f.finding_id}
+                              f={f}
+                              to={findingPath(f.finding_id)}
+                              active={hover?.id === f.finding_id}
+                              approx={pos ? pos.approx : null}
+                              onHover={(id) => setHover(id ? { id, fromMap: false } : null)}
+                              onSelect={select}
+                              prefetch={() => prefetchFinding(orgId, runId, f.finding_id, true)}
+                              rowRef={(el) => {
+                                if (el) rowRefs.current.set(f.finding_id, el);
+                                else rowRefs.current.delete(f.finding_id);
+                              }}
+                            />
+                          );
+                        })
+                      )}
+                    </div>
+                  </section>
+                </motion.div>
+              )}
+            </AnimatePresence>
           )}
         </div>
       </div>
@@ -449,14 +547,9 @@ export default function RunDetailPage() {
             <TypeBarList counts={typeCounts} selected={filters.types} onToggle={toggleType} />
           </section>
           <div className="pw-stack">
-            <section className="pw-tile pw-tile--raised">
+            <section className={`pw-tile ${r.data_warnings.length ? 'pw-tile--warn' : 'pw-tile--raised'}`}>
               <div className="pw-tile__head">
-                <div>
-                  <h2 className="pw-tile__title">Survey data quality</h2>
-                  <p className="pw-tile__blurb">
-                    Where the data was too weak to be sure, &ldquo;no findings&rdquo; does not mean &ldquo;no defects&rdquo;.
-                  </p>
-                </div>
+                <h2 className="pw-tile__title">Survey data quality</h2>
               </div>
               <DataWarningsList warnings={r.data_warnings} />
             </section>

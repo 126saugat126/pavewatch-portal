@@ -1,4 +1,4 @@
-import { Badge, Group, Stack, Text, ThemeIcon } from '@mantine/core';
+import { Badge, Group, Stack, Text } from '@mantine/core';
 import { IconCircleCheck } from '@tabler/icons-react';
 import type { DataWarning, QualityWarning } from '../api/types';
 import { warningMeta } from '../lib/defects';
@@ -8,9 +8,9 @@ function WarningRow({ code, message, onMap }: { code: string; message?: string |
   const Icon = m.icon;
   return (
     <Group gap="sm" align="flex-start" wrap="nowrap">
-      <ThemeIcon variant="light" color="gray" size={30} radius="md">
+      <span className="pw-warn-icon" aria-hidden>
         <Icon size={17} />
-      </ThemeIcon>
+      </span>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Group gap={6}>
           <Text fz="sm" fw={600}>

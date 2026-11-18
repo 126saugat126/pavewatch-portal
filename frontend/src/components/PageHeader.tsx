@@ -1,24 +1,19 @@
 import { Skeleton } from '@mantine/core';
-import { Fragment, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-
-export interface Crumb {
-  label: ReactNode;
-  to?: string;
-}
+import type { ReactNode } from 'react';
 
 /**
- * Section opener: uppercase breadcrumb eyebrow, a light display title in columns 1–7,
+ * Section opener: an optional uppercase eyebrow, a light display title in columns 1–7,
  * and an aside (facts, actions) in columns 8–12 aligned to the title's baseline.
+ * Where you are in the hierarchy is shown by the trail in the top bar, not here.
  */
 export function PageHeader({
-  crumbs,
+  eyebrow,
   title,
   subtitle,
   right,
   loading,
 }: {
-  crumbs: Crumb[];
+  eyebrow?: ReactNode;
   title: ReactNode;
   /** Short factual paragraph or meta line shown in the aside. */
   subtitle?: ReactNode;
@@ -28,24 +23,7 @@ export function PageHeader({
 }) {
   return (
     <header className="pw-opener">
-      <nav className="pw-opener__crumbs pw-eyebrow" aria-label="Breadcrumb">
-        {crumbs.map((c, i) => (
-          <Fragment key={i}>
-            {i > 0 && (
-              <span className="pw-crumb-sep" aria-hidden>
-                /
-              </span>
-            )}
-            {c.to ? (
-              <Link to={c.to}>{c.label}</Link>
-            ) : (
-              <span className="pw-crumb-here" aria-current="page">
-                {c.label}
-              </span>
-            )}
-          </Fragment>
-        ))}
-      </nav>
+      {eyebrow && <div className="pw-opener__crumbs pw-eyebrow">{eyebrow}</div>}
       <div className="pw-grid">
         <div className="pw-opener__title">
           {loading ? <Skeleton h={56} w="70%" /> : <h1 className="pw-display">{title}</h1>}

@@ -1,85 +1,95 @@
-# PaveWatch portal: design system (v1, approved 2026-11-17)
+# PaveWatch portal: design system (v2, approved 2026-11-17)
 
-Approved by the user on 2026-11-17: dark-first with the light toggle kept, lime accent, and evidence photos as tile backgrounds on the Companies and Runs pages.
+v2 replaces v1 (dark-first, lime accent). Approved by the user on 2026-11-17: a **light-first** look with a dark toggle, built on a warm ivory ground with sage and mint surfaces, forest-teal actions and deep slate-teal text. The polish and motion take their cue from the Haulix logistics dashboard: icon sidebar, summary chips, rounded cards, fluid transitions. We borrow its feel only, not its branding, layout or content.
 
-Reference: Squarespace AI-builder page. We borrow its **layout rhythm, border treatment and type scale**. We do not borrow its imagery, copy or branding. The look we're after is a **dark field-survey ledger**: warm charcoal tiles that hold survey evidence, with oversized light numerals and monospaced data.
+The look we're after is a **technical, geospatial inspection workspace**: calm surfaces, clear hierarchy, and colour reserved for meaning (severity, geography, selection).
 
-## 1. What we take from the reference
+## 1. Colour
 
-| Reference trait | Observed | PaveWatch adaptation |
+Tokens live in `frontend/src/styles/global.css`. MapLibre overlays mirror them in `components/map/basemap.ts`.
+
+| Role | Light | Dark | Use |
+| --- | --- | --- | --- |
+| Ground | `#F7F8F4` | `#111716` | Page background |
+| Tile | `#FFFFFF` | `#18201F` | Cards, with 1px hairline and a soft shadow |
+| Tile 2 / mint | `#EEF2EB` | `#212B29` | Hover, row highlight |
+| Sage | `#E8EDE5` | `#1D2725` | Quiet surfaces: segmented track, raised tiles |
+| Ink | `#344B49` | `#E6ECE7` | Body text |
+| Ink strong | `#22322F` | `#F4F7F4` | Titles, numerals |
+| Ink 2 | `#5F7370` | `#9DADA8` | Secondary text (≥ 4.5:1 on tile) |
+| Hairline | `#DDE4DA` | `#2B3735` | Borders, dividers |
+| **Accent (forest teal)** | `#547B70` | `#8FBCAE` | Primary actions, active nav, **selection ring** |
+| Accent soft (sage) | `#A8BCA5` | `#5D7A6C` | Hover bars, text selection |
+| **Geo (blue)** | `#3F74A3` | `#7FB0DC` | Flight path, GPS accuracy, map-related marks |
+| Highlight (terracotta) | `#D98B54` | `#E39A66` | Small highlights only (e.g. a "new" badge). Never selection |
+
+**Gradients** are limited to primary actions, the active sidebar item and progress bars (`--pw-accent-grad`, teal 135°).
+
+**Severity** (functional, unchanged from v1): `#d03b3b` high, `#fab219` medium, `#898781` low. They were validated for colour-blind separation and always come with an icon and a label. Terracotta sits close to the medium amber, which is why selection uses the teal ring and not terracotta.
+
+**Detection boxes** on evidence photos use a bright mint (`#7EE3C6`) with a dark halo, so they read on asphalt in both themes.
+
+## 2. Type
+
+| Role | Font | Size / line / weight |
 | --- | --- | --- |
-| Page ground | Near-black page, warm stone/taupe tiles | Charcoal ground, two warmer tile steps |
-| Separation | Tonal steps, **no borders, no shadows** | Same. 1px hairlines only on inputs, table rows and the map frame |
-| Corners | ~8px tiles, square white CTAs | **4px** tiles, **0px** buttons/inputs |
-| Display type | Big, light-weight grotesk, tight tracking (~56px/1.0) | Archivo 300, −0.025em, used for page titles and stat numerals |
-| Tile titles | ~24px medium, white, top-left, with a 2-line muted blurb | Same placement for every tile |
-| Nav | Small UPPERCASE labels; pill segmented sub-nav | UPPERCASE top bar; pill segmented control for Map/List, sort and view toggles |
-| Rhythm | 40px outer gutter, 40px tile gap, 40px tile padding | Same on desktop; 24 / 16 on smaller screens |
-| Columns | Two columns of **unequal height**, right column starts offset | 12-col grid, 7/5 and 5/7 splits that alternate by section, staggered starts |
-| Primary CTA | Solid white rectangle, dark caps label | Same ("Open finding", "Export PDF") |
-
-## 2. Colour (2 base + 1 accent)
-
-| Token | Hex | Role |
-| --- | --- | --- |
-| `--pw-ink-900` (base 1) | `#1A1918` | Page ground |
-| `--pw-ink-800` | `#262422` | Tile surface (step 1) |
-| `--pw-ink-700` | `#38342F` | Raised tile / hover (step 2, warm taupe) |
-| `--pw-paper` (base 2) | `#EEEAE3` | Primary text on dark; CTA fill; input fill |
-| `--pw-paper-dim` | `#A39E95` | Secondary text (≥ 4.5:1 on 800) |
-| `--pw-hairline` | `#3F3B36` | 1px rules, table dividers |
-| `--pw-accent` | `#C6F432` | **Machine annotation**: bounding boxes, flight path, selected marker, focus ring, active nav |
-
-Tile steps are tints of base 1, so they don't add a colour. The accent stands for **what the system drew** (detections, path, selection). It is never used for decoration or large fills.
-
-**Exception (functional, not brand):** the severity colours stay exactly as they are (`#d03b3b` high, `#fab219` medium, `#898781` low). They were validated for colour-blind separation and always come with an icon and a label. Lime sits clear of red and amber, so the accent can't be confused with a severity.
-
-**Light mode** keeps the existing toggle: paper `#F4F0EA` ground, white tiles, ink `#111111` text. On paper, lime is too pale to read as text, so the accent becomes `#4F6B00` for text and lines, and lime remains only as a fill under dark text.
-
-## 3. Type
-
-| Role | Font | Size / line / weight / tracking |
-| --- | --- | --- |
-| Display (page title, hero stat) | **Archivo** | `clamp(40px, 4.2vw, 64px)` / 1.0 / 300 / −0.025em |
-| Stat numeral (tiles) | Archivo | 48 / 1.0 / 300 / −0.02em, tabular |
-| H2 tile title | Archivo | 24 / 1.2 / 600 / −0.01em |
-| H3 / list primary | Archivo | 17 / 1.35 / 500 |
+| Page title | Archivo | `clamp(28px, 2.6vw, 40px)` / 1.1 / 500 / −0.02em |
+| Stat numeral | Archivo | 34–40 / 1.0 / 400, tabular |
+| Tile title | Archivo | 19 / 1.25 / 600 |
 | Body | Archivo | 15 / 1.5 / 400 |
-| Nav / eyebrow labels | Archivo (width 112, semi-expanded) | 13 / 1 / 600 / +0.04em / UPPERCASE |
-| Data: IDs, coords, measurements, timestamps | **IBM Plex Mono** | 13 / 1.4 / 450, tabular |
+| Eyebrow / caps labels | Archivo (width 112) | 12 / 1 / 600 / +0.05em / UPPERCASE |
+| Data: IDs, coordinates, measurements, timestamps | IBM Plex Mono | 12.5 / 1.4 / 400, tabular |
 
-Scale steps: 12 · 13 · 15 · 17 · 24 · 32 · 48 · 64.
+Both fonts are self-hosted (`@fontsource`), so the app needs no CDN.
 
-Archivo is a variable grotesk (weights 100–900, widths 62–125), so one family covers both the light display face and the expanded caps. Plex Mono gives the run IDs (`PW-20261114-1502-A1`), finding IDs and `0.85 × 0.83 m · 0.027 m deep` a ledger feel. Fonts are self-hosted through `@fontsource-variable/archivo` and `@fontsource/ibm-plex-mono`, so the local app needs no CDN.
+## 3. Shape, depth and spacing
 
-## 4. Grid and layout behaviour
+- **Radius:** tiles 14px, controls 10px, small badges 6px, pills full.
+- **Depth:** tiles have a 1px hairline and `--pw-shadow-1`. Interactive tiles lift 3px to `--pw-shadow-2` on hover. Popovers, modals and toasts use `--pw-shadow-pop`. Dark mode relies on borders more than shadows.
+- **Spacing:** gutter and tile padding are 32/28px at ≥1280px, 24/24 at 768–1279px, and 16/18 below 768px.
 
-- **Grid:** 12 columns, max width 1840px. Gutter and gap are 40px at ≥1280px, 24px at 768–1279px, and 16px below 768px. On phones it collapses to one column with no horizontal scroll.
-- **Header:** 72px, `ink-900`, wordmark on the left, UPPERCASE nav, and a theme toggle as a square icon button. A sticky pill segmented sub-nav sits under the page title where views switch.
-- **Section opener ("Meet…" pattern):** display title in cols 1–6, and a short factual paragraph plus key counts in cols 8–12, aligned to the title's baseline.
-- **Tiles:** 40px padding. Title and blurb sit top-left, and content anchors to the bottom of the tile. Survey imagery (real evidence frames) can bleed full-tile behind a dark scrim. No borders.
+## 4. Shell
 
-Per screen:
+- **Top bar** (sticky, translucent), left to right: the PaveWatch mark (home); **Back** and **Forward** buttons; the **trail**; summary chips; theme toggle. There is no sidebar.
+- **Back / Forward** step through browser history. Back falls back to "up one level" when the page was opened directly; Forward is disabled when there is nothing ahead.
+- **Trail:** Companies › Surveys › Findings (› the open finding). Each step shows its level in small caps and the name of what you are in. The current step is filled with the teal gradient (it slides between steps); earlier steps are buttons. Names come from the cached queries, so the trail costs no extra requests.
+- **Summary chips** for all clients (clients, surveys, findings, high severity) and a "Live" indicator. They shorten on narrow screens and disappear below 900px.
+- Page titles sit in each page's opener; the opener has no breadcrumb of its own any more.
 
-| Screen | Structure |
-| --- | --- |
-| Companies | Opener ("Survey clients" + totals). Below it, a 2-column staggered tile list: the left column starts flush, the right column starts 80px lower. Each tile shows company name, sites, run count, last survey date (mono) and open high-severity count |
-| Runs | Opener with company name. A 7/5 split: on the left, a tall tile for the latest run (evidence frame, status, stat numerals); on the right, a dense run ledger (date, site, run ID, findings, warnings) with hairline rows |
-| Run detail | Incomplete/data-warning banner as a full-width `ink-700` tile, not yellow. A stat strip of 4 tiles with 48px light numerals. Then a 7/5 split: map tile left (sticky), findings ledger right. Filters sit in the pill segmented bar above |
-| Finding detail | A 7/5 split flipped to 5/7 on alternate sections. Image viewer is a large tile with accent bounding boxes; the spec sheet is a mono key/value list, then location mini-map and quality warnings |
+### Survey workspace
 
-## 5. Components (deltas from today)
+The survey page is one workspace. The map, the findings list and the open finding share a single selection stored in the URL (`/orgs/:org/runs/:run/findings/:id`; filters stay in the query string). Clicking a list row or a map marker opens the finding in place of the list; the selected marker gets a teal ring and the map only pans if the marker is off screen. Previous / next (buttons, ← →) follow the filtered, sorted list; Esc or "All findings" closes it. On stacked layouts (<1100px) the same panel sits below the map.
 
-- **Buttons:** 0 radius. Primary is paper fill with ink caps; secondary is a 1px paper outline. Height 44.
-- **Inputs:** 0 radius, paper fill, ink text, 17px. This matches the reference's white search field.
-- **Segmented control:** pill shape (the one place we allow full rounding), `ink-700` track, `ink-800` active thumb, caps label.
-- **Badges:** square 2px radius, mono 12px. Severity badges keep icon, label and colour.
-- **Map:** a dark basemap style in dark mode. Markers keep the severity colours and letter glyphs; the selected marker gets an accent ring, and the flight path turns accent.
-- **Motion:** 120ms colour and opacity only. No lift or translate on hover; hover raises the tile one tonal step (800 → 700).
-- **Removed:** drop shadows, `md` rounded cards, blue primary, system-ui font.
+### Data-quality warnings
 
-## 6. Open points for approval
+Warnings about data quality (survey notes, per-finding quality warnings, warning areas on the map) use a faint red wash (`--pw-warn-wash`, `--pw-warn-line`, `--pw-warn-ink`). It is deliberately softer than the high-severity red. A survey with no warnings keeps the quiet sage tile.
 
-1. Dark-first with the light toggle kept, or dark only?
-2. Accent `#C6F432` lime as the "machine annotation" colour. Alternative: a road-marking white-only scheme with no hue accent.
-3. Should Companies and Runs tiles use real evidence frames as tile backgrounds? This needs one representative image per run from the API.
+## 5. Motion
+
+One curve and three durations everywhere (`src/lib/motion.ts`, mirrored as CSS variables):
+
+| Token | Value | Use |
+| --- | --- | --- |
+| Ease | `cubic-bezier(0.22, 1, 0.36, 1)` | Everything |
+| Fast | 150ms | Colour, press feedback |
+| Base | 250ms | Hover lift, tooltips, popovers, toggles |
+| Slow | 450ms | Entrances, page transitions, segmented indicator |
+| Stagger | 50ms | Between tiles in an entrance |
+
+- **Entrances:** tiles and list rows fade and rise 12px when they are inserted. Elements that stay mounted (e.g. rows that survive a filter change) are not re-animated.
+- **Numbers** count up on first load and glide to new values after a refresh.
+- **Bars** (severity mix, type bars) grow in from the left.
+- **Pages** fade and rise on route change. Filter and query changes don't replay it.
+- **Live data:** company and survey lists re-check the server every 60 seconds. New surveys raise an info toast, and a failed background refresh raises a warning toast while the last data stays on screen.
+- **Reduced motion:** `MotionConfig reducedMotion="user"` plus a CSS media query. Movement is removed and state changes are instant.
+
+## 6. Toasts
+
+`src/lib/toast.tsx` is the single entry point (`toast.success/info/warning/error`, and `copyText`). Toasts appear bottom-right, at most three at a time, with an icon tinted by kind.
+
+## 7. Next stages (approved plan)
+
+2. ~~Survey workspace~~ built (see section 4); still to do: preserve map position across filter changes, comparison links.
+3. Detection reveal in the image viewer.
+4. Flight-path visualisation (route drawing; an even-paced replay labelled "not to time").
+5. Analytics.
