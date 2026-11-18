@@ -2,18 +2,14 @@ import {
   ActionIcon,
   Alert,
   Anchor,
-  Button,
   CopyButton,
-  Grid,
   Group,
   Kbd,
-  Paper,
   Progress,
   Skeleton,
   Stack,
   Table,
   Text,
-  Title,
   Tooltip,
 } from '@mantine/core';
 import { useDocumentTitle, useHotkeys } from '@mantine/hooks';
@@ -33,30 +29,40 @@ import { SOURCE_LABEL, defectMeta, defectTitle, humanize } from '../lib/defects'
 import { fmtCoord, fmtDate, fmtDateTime, fmtMeasurement, fmtNumber, sortedMeasurements } from '../lib/format';
 import { findingPosition, osmLink } from '../lib/geo';
 
-function Section({ title, children, extra }: { title: string; children: ReactNode; extra?: ReactNode }) {
+function Section({
+  title,
+  children,
+  extra,
+  raised,
+}: {
+  title: string;
+  children: ReactNode;
+  extra?: ReactNode;
+  raised?: boolean;
+}) {
   return (
-    <Paper withBorder radius="md" p="md">
-      <Group justify="space-between" mb="sm">
-        <Title order={2} fz="md">
-          {title}
-        </Title>
+    <section className={`pw-tile${raised ? ' pw-tile--raised' : ''}`}>
+      <div className="pw-tile__head">
+        <h2 className="pw-tile__title">{title}</h2>
         {extra}
-      </Group>
+      </div>
       {children}
-    </Paper>
+    </section>
   );
 }
 
 function KV({ rows }: { rows: [string, ReactNode][] }) {
   return (
-    <Table fz="sm" verticalSpacing={6} withRowBorders={false}>
+    <Table fz="sm" verticalSpacing={10}>
       <Table.Tbody>
         {rows.map(([k, v]) => (
           <Table.Tr key={k}>
             <Table.Td c="dimmed" w={150} pl={0} style={{ verticalAlign: 'top' }}>
               {k}
             </Table.Td>
-            <Table.Td pr={0}>{v}</Table.Td>
+            <Table.Td pr={0} className="pw-mono">
+              {v}
+            </Table.Td>
           </Table.Tr>
         ))}
       </Table.Tbody>
@@ -162,51 +168,46 @@ export default function FindingDetailPage() {
         ]}
         title={
           f && (
-            <Group gap="sm" wrap="wrap">
-              <span>{defectTitle(f.defect_type, f.subtype)}</span>
-              <Text component="span" ff="monospace" fz="lg" c="dimmed" fw={500}>
-                {f.finding_id}
-              </Text>
-            </Group>
+            <>
+              {defectTitle(f.defect_type, f.subtype)}
+              <span className="pw-display__id">{f.finding_id}</span>
+            </>
           )
         }
         subtitle={
           f && (
-            <Group gap="sm" wrap="wrap">
-              <SeverityBadge severity={f.severity} />
-              <span>Detected {fmtDateTime(f.detected_at)}</span>
-            </Group>
+            <Stack gap="sm">
+              <Group gap="sm" wrap="wrap">
+                <SeverityBadge severity={f.severity} />
+                <span className="pw-mono">Detected {fmtDateTime(f.detected_at)}</span>
+              </Group>
+              {f.description && <span>{f.description}</span>}
+            </Stack>
           )
         }
         right={f && <Pager f={f} pathFor={pathFor} />}
       />
 
-      <Grid gap="md">
-        <Grid.Col span={{ base: 12, lg: 7 }}>
+      <div className="pw-grid pw-split-7-5">
+        <div style={{ minWidth: 0 }}>
+          <section className="pw-tile pw-tile--flush" style={{ padding: 'calc(var(--pw-tile-pad) / 2)' }}>
           {!f ? (
-            <Skeleton radius="md" style={{ aspectRatio: '16 / 10' }} />
+            <Skeleton style={{ aspectRatio: '16 / 10' }} />
           ) : current ? (
             <>
               <ImageViewer evidence={current} showBoxes={showBoxes} onToggleBoxes={() => setShowBoxes((s) => !s)} />
               {images.length > 1 && <EvidenceStrip evidence={images} selected={selectedIndex} onSelect={setSelected} />}
             </>
           ) : (
-            <Paper withBorder p="lg" radius="md">
+            <div style={{ padding: 'calc(var(--pw-tile-pad) / 2)' }}>
               <Text c="dimmed" fz="sm" mb="sm">
                 This finding has no images.
               </Text>
               <EvidenceStrip evidence={images} selected={-1} onSelect={() => undefined} />
-            </Paper>
+            </div>
           )}
-          {f?.description && (
-            <Paper withBorder radius="md" p="md" mt="md">
-              <Title order={2} fz="md" mb={6}>
-                Description
-              </Title>
-              <Text fz="sm">{f.description}</Text>
-            </Paper>
-          )}
-          <Group gap={6} mt="sm" visibleFrom="sm" c="dimmed" fz="xs">
+          </section>
+          <Group gap={6} mt="md" visibleFrom="sm" c="dimmed" fz="xs">
             <Kbd size="xs">←</Kbd>
             <Kbd size="xs">→</Kbd>
             <span>previous / next finding</span>
@@ -215,20 +216,20 @@ export default function FindingDetailPage() {
             </Kbd>
             <span>toggle boxes</span>
           </Group>
-        </Grid.Col>
+        </div>
 
-        <Grid.Col span={{ base: 12, lg: 5 }}>
+        <div style={{ minWidth: 0 }}>
           {!f ? (
-            <Stack>
-              <Skeleton h={160} radius="md" />
-              <Skeleton h={260} radius="md" />
-            </Stack>
+            <div className="pw-stack">
+              <Skeleton h={200} />
+              <Skeleton h={320} />
+            </div>
           ) : (
-            <Stack gap="md">
+            <div className="pw-stack">
               <Section title="Measurements">
                 {Object.keys(f.measurements).length ? (
                   <>
-                    <KV rows={sortedMeasurements(f.measurements).map(([k, m]) => [humanize(k), <Text fz="sm" fw={600} className="pw-tabular">{fmtMeasurement(m)}</Text>])} />
+                    <KV rows={sortedMeasurements(f.measurements).map(([k, m]) => [humanize(k), <span className="pw-stat-num" style={{ fontSize: 28 }}>{fmtMeasurement(m)}</span>])} />
                     <Text fz="xs" c="dimmed" mt={4}>
                       Estimated by the processing pipeline; verify on site before repair planning.
                     </Text>
@@ -263,9 +264,7 @@ export default function FindingDetailPage() {
                         [
                           position.approx ? 'Approx. coordinates' : 'Coordinates',
                           <Group gap={4} wrap="nowrap">
-                            <Text fz="sm" ff="monospace">
-                              {fmtCoord(position.lat, position.lon)}
-                            </Text>
+                            <span>{fmtCoord(position.lat, position.lon)}</span>
                             <CopyButton value={`${position.lat.toFixed(6)}, ${position.lon.toFixed(6)}`}>
                               {({ copied, copy }) => (
                                 <Tooltip label={copied ? 'Copied' : 'Copy coordinates'} withArrow>
@@ -317,7 +316,7 @@ export default function FindingDetailPage() {
                           <Text fz="sm" fw={600} w={40} className="pw-tabular">
                             {Math.round(f.confidence * 100)}%
                           </Text>
-                          <Progress value={f.confidence * 100} size="sm" w={110} color="var(--pw-series)" aria-label="Detection confidence" />
+                          <Progress value={f.confidence * 100} size="sm" w={110} radius={0} color="var(--pw-series)" aria-label="Detection confidence" />
                         </Group>
                       ) : (
                         '—'
@@ -329,17 +328,17 @@ export default function FindingDetailPage() {
                 />
               </Section>
 
-              <Section title="Quality warnings">
+              <Section title="Quality warnings" raised>
                 <QualityWarningsList warnings={f.quality_warnings} />
               </Section>
 
-              <Button variant="default" component={Link} to={runPath} leftSection={<IconChevronLeft size={16} />}>
-                Back to all findings in this survey
-              </Button>
-            </Stack>
+              <Link to={runPath} className="pw-cta pw-cta--ghost pw-caps" style={{ alignSelf: 'flex-start' }}>
+                <IconChevronLeft size={16} /> All findings in this survey
+              </Link>
+            </div>
           )}
-        </Grid.Col>
-      </Grid>
+        </div>
+      </div>
     </>
   );
 }

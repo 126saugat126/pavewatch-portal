@@ -24,17 +24,50 @@ def _org_ref(org: m.Organization) -> s.OrgRef:
 # ------------------------------------------------------------- organizations
 
 
-def list_organizations(db: Session) -> list[s.OrganizationSummary]:
+_SEV_RANK = {"high": 3, "medium": 2, "low": 1}
+_KIND_RANK = {"image_raw": 2, "image_closeup": 1}
+
+
+def _run_covers(db: Session, storage: Storage, run_pks: Iterable[int]) -> dict[int, str]:
+    """One representative image per run, used as a tile background.
+
+    Prefers the wide raw frame of the most severe finding (ties: lowest finding id),
+    served at preview size so tiles stay light.
+    """
+    pks = list(run_pks)
+    if not pks:
+        return {}
+    rows = db.execute(
+        select(m.Finding.run_pk, m.Finding.finding_id, m.Finding.severity, m.Evidence.kind, m.Evidence.position,
+               m.Evidence.preview_key)
+        .join(m.Evidence, m.Evidence.finding_pk == m.Finding.id)
+        .where(m.Finding.run_pk.in_(pks), m.Evidence.preview_key.is_not(None))
+    ).all()
+    best: dict[int, tuple] = {}
+    for run_pk, fid, sev, kind, pos, key in rows:
+        rank = (-_SEV_RANK.get(sev or "", 0), -_KIND_RANK.get(kind, 0), fid, pos)
+        if run_pk not in best or rank < best[run_pk][0]:
+            best[run_pk] = (rank, key)
+    return {pk: storage.url(key) for pk, (_, key) in best.items()}
+
+
+def list_organizations(db: Session, storage: Storage) -> list[s.OrganizationSummary]:
     orgs = db.scalars(select(m.Organization).order_by(m.Organization.name)).all()
 
     run_rows = db.execute(
-        select(m.Run.org_id, m.Run.started_at, m.Run.site_name).order_by(m.Run.started_at.desc())
+        select(m.Run.org_id, m.Run.started_at, m.Run.site_name, m.Run.id).order_by(m.Run.started_at.desc())
     ).all()
     run_count: Counter[int] = Counter()
     latest: dict[int, tuple] = {}
-    for org_id, started_at, site in run_rows:
+    for org_id, started_at, site, run_pk in run_rows:
         run_count[org_id] += 1
-        latest.setdefault(org_id, (started_at, site))
+        latest.setdefault(org_id, (started_at, site, run_pk))
+    # Cover: the most recent run that has an image.
+    covers = _run_covers(db, storage, (r[3] for r in run_rows))
+    org_cover: dict[int, str] = {}
+    for org_id, _, _, run_pk in run_rows:
+        if run_pk in covers:
+            org_cover.setdefault(org_id, covers[run_pk])
 
     finding_rows = db.execute(
         select(m.Finding.org_id, m.Finding.severity, func.count()).group_by(m.Finding.org_id, m.Finding.severity)
@@ -53,8 +86,9 @@ def list_organizations(db: Session) -> list[s.OrganizationSummary]:
             run_count=run_count[o.id],
             finding_count=finding_count[o.id],
             high_severity_count=high_count[o.id],
-            last_survey_at=latest.get(o.id, (None, None))[0],
-            last_site_name=latest.get(o.id, (None, None))[1],
+            last_survey_at=latest.get(o.id, (None, None, None))[0],
+            last_site_name=latest.get(o.id, (None, None, None))[1],
+            cover_url=org_cover.get(o.id),
         )
         for o in orgs
     ]
@@ -113,10 +147,11 @@ def _summary_fields(run: m.Run, st: dict) -> dict:
     )
 
 
-def list_runs(db: Session, org: m.Organization) -> list[s.RunSummary]:
+def list_runs(db: Session, storage: Storage, org: m.Organization) -> list[s.RunSummary]:
     runs = db.scalars(select(m.Run).where(m.Run.org_id == org.id).order_by(m.Run.started_at.desc())).all()
     stats = _run_stats(db, (r.id for r in runs))
-    return [s.RunSummary(**_summary_fields(r, stats[r.id])) for r in runs]
+    covers = _run_covers(db, storage, (r.id for r in runs))
+    return [s.RunSummary(**_summary_fields(r, stats[r.id]), cover_url=covers.get(r.id)) for r in runs]
 
 
 def get_run_model(db: Session, org: m.Organization, run_id: str) -> m.Run:

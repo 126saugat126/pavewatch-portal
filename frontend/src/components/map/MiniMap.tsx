@@ -49,15 +49,15 @@ export function MiniMap({ position, accuracyM, defectType, severity, flightPath,
         id: 'context-path',
         type: 'line',
         source: 'context-path',
-        paint: { 'line-color': '#2a78d6', 'line-width': 1.5, 'line-opacity': 0.45 },
+        paint: { 'line-color': '#c6f432', 'line-width': 1.5, 'line-opacity': 0.6 },
       });
       map.addSource('accuracy', { type: 'geojson', data: circle });
-      map.addLayer({ id: 'accuracy-fill', type: 'fill', source: 'accuracy', paint: { 'fill-color': '#2a78d6', 'fill-opacity': 0.12 } });
+      map.addLayer({ id: 'accuracy-fill', type: 'fill', source: 'accuracy', paint: { 'fill-color': '#c6f432', 'fill-opacity': 0.12 } });
       map.addLayer({
         id: 'accuracy-line',
         type: 'line',
         source: 'accuracy',
-        paint: { 'line-color': '#2a78d6', 'line-width': 1.5, 'line-dasharray': [2, 1.5] },
+        paint: { 'line-color': '#c6f432', 'line-width': 1.5, 'line-dasharray': [2, 1.5] },
       });
     } else {
       (map.getSource('accuracy') as GeoJSONSource).setData(circle);

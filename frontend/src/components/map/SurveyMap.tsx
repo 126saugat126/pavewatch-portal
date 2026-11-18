@@ -100,7 +100,7 @@ export function SurveyMap({ run, findings, allFindings, hoveredId, onHover, onOp
         type: 'line',
         source: 'flight',
         layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': '#2a78d6', 'line-width': 2.5, 'line-opacity': 0.9 },
+        paint: { 'line-color': '#c6f432', 'line-width': 2.5, 'line-opacity': 0.95 },
       });
     } else {
       (map.getSource('warnings') as GeoJSONSource).setData(warnings);
@@ -204,10 +204,9 @@ export function SurveyMap({ run, findings, allFindings, hoveredId, onHover, onOp
           ]}
           aria-label="Base map"
           withItemsBorders={false}
-          styles={{ root: { boxShadow: 'var(--mantine-shadow-sm)' } }}
         />
         <Tooltip label="Fit survey area" withArrow>
-          <ActionIcon variant="default" size={30} onClick={() => fit()} aria-label="Fit survey area" style={{ boxShadow: 'var(--mantine-shadow-sm)' }}>
+          <ActionIcon variant="default" size={30} onClick={() => fit()} aria-label="Fit survey area">
             <IconFocus2 size={16} />
           </ActionIcon>
         </Tooltip>

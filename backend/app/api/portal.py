@@ -17,8 +17,8 @@ router = APIRouter(prefix="/api/v1", tags=["Portal"], responses={404: {"model": 
 
 
 @router.get("/orgs", summary="Companies that use the service")
-def list_orgs(db: Session = Depends(get_db)) -> list[s.OrganizationSummary]:
-    return svc.list_organizations(db)
+def list_orgs(request: Request, db: Session = Depends(get_db)) -> list[s.OrganizationSummary]:
+    return svc.list_organizations(db, request.app.state.storage)
 
 
 @router.get("/orgs/{org_id}", summary="One company")
@@ -28,8 +28,8 @@ def get_org(org_id: str, db: Session = Depends(get_db)) -> s.OrgRef:
 
 
 @router.get("/orgs/{org_id}/runs", summary="Survey runs of a company (newest first)")
-def list_runs(org_id: str, db: Session = Depends(get_db)) -> list[s.RunSummary]:
-    return svc.list_runs(db, svc.get_organization(db, org_id))
+def list_runs(org_id: str, request: Request, db: Session = Depends(get_db)) -> list[s.RunSummary]:
+    return svc.list_runs(db, request.app.state.storage, svc.get_organization(db, org_id))
 
 
 @router.get("/orgs/{org_id}/runs/{run_id}", summary="One survey run with flight path and data warnings")

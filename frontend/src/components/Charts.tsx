@@ -1,4 +1,4 @@
-import { Group, Paper, Stack, Text, Tooltip } from '@mantine/core';
+import { Group, Stack, Text, Tooltip } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { DEFECT_TYPES, SEVERITIES, defectMeta, severityMeta } from '../lib/defects';
 import { Glyph } from './Badges';
@@ -19,6 +19,7 @@ export function SeverityBar({ counts }: { counts: Record<string, number> }) {
   );
 }
 
+/** Stat strip tile: label on top, oversized light numeral, hint anchored to the bottom. */
 export function StatTile({
   label,
   value,
@@ -31,24 +32,27 @@ export function StatTile({
   hint?: ReactNode;
 }) {
   return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={2}>
-        <Group gap={6} wrap="nowrap">
-          {icon}
-          <Text fz="sm" c="dimmed" fw={500}>
-            {label}
-          </Text>
-        </Group>
-        <Text fz={28} fw={650} lh={1.15}>
-          {value}
-        </Text>
-        {hint && (
-          <Text fz="xs" c="dimmed">
-            {hint}
-          </Text>
-        )}
-      </Stack>
-    </Paper>
+    <div className="pw-tile pw-stat">
+      <span className="pw-stat__label">
+        {icon}
+        {label}
+      </span>
+      <span className="pw-stat-num">{value}</span>
+      {hint && <span className="pw-stat__hint">{hint}</span>}
+    </div>
+  );
+}
+
+/** Key figure: numeral over an uppercase label. */
+export function Figure({ label, value, icon }: { label: string; value: ReactNode; icon?: ReactNode }) {
+  return (
+    <div className="pw-figure">
+      <span className="pw-stat-num">{value}</span>
+      <span className="pw-figure__label pw-eyebrow pw-dim">
+        {icon}
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -77,7 +81,7 @@ export function TypeBarList({
     );
   }
   return (
-    <Stack gap={2}>
+    <Stack gap={0}>
       {rows.map(({ t, n }) => {
         const label = defectMeta(t).label;
         const active = selected.includes(t);

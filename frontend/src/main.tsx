@@ -1,3 +1,6 @@
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
 import '@mantine/core/styles.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './styles/global.css';
@@ -15,7 +18,7 @@ import { theme } from './theme';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="auto">
+    <MantineProvider theme={theme} defaultColorScheme="dark">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>

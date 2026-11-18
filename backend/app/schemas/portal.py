@@ -17,6 +17,7 @@ class OrganizationSummary(OrgRef):
     high_severity_count: int
     last_survey_at: datetime | None
     last_site_name: str | None
+    cover_url: str | None = None  # representative evidence frame from the latest run
 
 
 class RunSummary(BaseModel):
@@ -31,6 +32,7 @@ class RunSummary(BaseModel):
     counts_by_severity: dict[str, int]
     data_warning_count: int
     findings_with_warnings: int
+    cover_url: str | None = None  # representative evidence frame (most severe finding)
 
 
 class DataWarningOut(BaseModel):

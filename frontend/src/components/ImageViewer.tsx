@@ -1,4 +1,4 @@
-import { ActionIcon, Anchor, Group, Kbd, Modal, Paper, Skeleton, Switch, Text, Tooltip, UnstyledButton } from '@mantine/core';
+import { ActionIcon, Anchor, Group, Kbd, Modal, Skeleton, Switch, Text, Tooltip, UnstyledButton } from '@mantine/core';
 import { IconExternalLink, IconFileDownload, IconMaximize } from '@tabler/icons-react';
 import { useState } from 'react';
 import type { BoundingBox, Evidence } from '../api/types';
@@ -28,8 +28,8 @@ function BoxOverlay({ boxes, w, h }: { boxes: BoundingBox[]; w: number; h: numbe
           <g key={i}>
             <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill="none" stroke="var(--pw-box-halo)" strokeWidth={5} vectorEffect="non-scaling-stroke" />
             <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} fill="none" stroke="var(--pw-box)" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
-            <rect x={x0} y={ty} width={tw} height={fs * 1.5} fill="var(--pw-box)" rx={fs * 0.2} />
-            <text x={x0 + fs * 0.4} y={ty + fs * 1.1} fontSize={fs} fontWeight={650} fill="#0b0b0b" fontFamily="system-ui, sans-serif">
+            <rect x={x0} y={ty} width={tw} height={fs * 1.5} fill="var(--pw-box)" />
+            <text x={x0 + fs * 0.4} y={ty + fs * 1.1} fontSize={fs} fontWeight={500} fill="#111111" fontFamily="IBM Plex Mono, ui-monospace, monospace">
               {label}
             </text>
           </g>
@@ -51,8 +51,8 @@ function Picture({ ev, src, showBoxes, maxHeight }: { ev: Evidence; src: string;
         aspectRatio: `${w} / ${h}`,
         width: maxHeight ? `min(100%, calc(${maxHeight} * ${w / h}))` : '100%',
         margin: '0 auto',
-        background: 'var(--mantine-color-default-border)',
-        borderRadius: 6,
+        background: 'var(--pw-hairline)',
+        borderRadius: 2,
         overflow: 'hidden',
       }}
     >
@@ -84,14 +84,14 @@ export function ImageViewer({
   const [full, setFull] = useState(false);
   const hasBoxes = evidence.bounding_boxes.length > 0;
   return (
-    <Paper withBorder radius="md" p="sm">
+    <div>
       <Picture key={evidence.url} ev={evidence} src={evidence.preview_url ?? evidence.url} showBoxes={showBoxes} />
       <Group justify="space-between" mt="sm" gap="xs" wrap="wrap">
         <div style={{ minWidth: 0 }}>
           <Text fz="sm" fw={600}>
             {evidenceKindLabel(evidence.kind)}
           </Text>
-          <Text fz="xs" c="dimmed" truncate maw={420}>
+          <Text c="dimmed" truncate maw={420} className="pw-mono" style={{ fontSize: 12 }}>
             {[evidence.caption, evidence.width_px && `${evidence.width_px}×${evidence.height_px}px`].filter(Boolean).join(' · ')}
           </Text>
         </div>
@@ -133,7 +133,7 @@ export function ImageViewer({
       >
         {full && <Picture ev={evidence} src={evidence.url} showBoxes={showBoxes} maxHeight="78vh" />}
       </Modal>
-    </Paper>
+    </div>
   );
 }
 
@@ -156,9 +156,9 @@ export function EvidenceStrip({
             aria-selected={i === selected}
             onClick={() => onSelect(i)}
             style={{
-              borderRadius: 8,
+              borderRadius: 0,
               padding: 3,
-              border: `2px solid ${i === selected ? 'var(--mantine-color-blue-filled)' : 'transparent'}`,
+              border: `2px solid ${i === selected ? 'var(--pw-accent)' : 'transparent'}`,
             }}
           >
             <img src={ev.thumb_url ?? ev.url} alt="" className="pw-thumb" style={{ width: 96, height: 60 }} loading="lazy" />

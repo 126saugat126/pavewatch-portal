@@ -55,19 +55,20 @@ export function applyBase(map: MapLibreMap, base: BaseLayer, scheme: 'light' | '
   map.setPaintProperty('base-osm', 'raster-hue-rotate', dark ? 180 : 0);
   map.setPaintProperty('base-osm', 'raster-saturation', dark ? -0.75 : -0.35);
   map.setPaintProperty('base-osm', 'raster-contrast', dark ? -0.05 : -0.05);
-  map.setPaintProperty('background', 'background-color', dark ? '#1d1d1b' : '#e8e7e3');
+  map.setPaintProperty('background', 'background-color', dark ? '#1a1918' : '#ebe6dd');
 }
 
 /** Overlay colours. MapLibre cannot read CSS variables, so the tokens are mirrored here. */
 export function overlayPalette(base: BaseLayer, scheme: 'light' | 'dark') {
   const dark = base === 'satellite' || scheme === 'dark';
   return {
-    flight: dark ? '#6da7ec' : '#2a78d6',
-    flightCasing: dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.9)',
-    warnFill: dark ? '#f0efec' : '#52514e',
+    // Accent = machine annotation: lime on dark/satellite, deep olive on the light map.
+    flight: dark ? '#c6f432' : '#4f6b00',
+    flightCasing: dark ? 'rgba(14,13,12,0.75)' : 'rgba(255,255,255,0.9)',
+    warnFill: dark ? '#eeeae3' : '#57534c',
     warnFillOpacity: dark ? 0.16 : 0.14,
-    warnLine: dark ? '#f0efec' : '#52514e',
-    accuracy: dark ? '#86b6ef' : '#2a78d6',
+    warnLine: dark ? '#eeeae3' : '#57534c',
+    accuracy: dark ? '#c6f432' : '#4f6b00',
   };
 }
 

@@ -11,6 +11,8 @@ export interface OrganizationSummary extends OrgRef {
   high_severity_count: number;
   last_survey_at: string | null;
   last_site_name: string | null;
+  /** Representative evidence frame from the latest run (tile background). */
+  cover_url: string | null;
 }
 
 export interface RunSummary {
@@ -25,6 +27,8 @@ export interface RunSummary {
   counts_by_severity: Record<string, number>;
   data_warning_count: number;
   findings_with_warnings: number;
+  /** Representative evidence frame (most severe finding), used as a tile background. */
+  cover_url: string | null;
 }
 
 export interface GeoJSONGeometry {

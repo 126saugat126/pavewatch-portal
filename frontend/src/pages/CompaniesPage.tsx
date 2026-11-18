@@ -1,68 +1,52 @@
-import { Card, Group, SimpleGrid, Skeleton, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
+import { Skeleton, TextInput } from '@mantine/core';
 import { useDocumentTitle } from '@mantine/hooks';
-import { IconAlertOctagon, IconBuildingCommunity, IconSearch, IconX } from '@tabler/icons-react';
+import { IconAlertOctagon, IconArrowUpRight, IconBuildingCommunity, IconSearch, IconX } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { orgsQuery, queryClient, runsQuery } from '../api/queries';
 import type { OrganizationSummary } from '../api/types';
+import { Figure } from '../components/Charts';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyBlock, ErrorState } from '../components/States';
 import { fmtDate, fmtRelative } from '../lib/format';
 
-function Stat({ label, value, icon }: { label: string; value: number; icon?: ReactNode }) {
+function CompanyTile({ org }: { org: OrganizationSummary }) {
+  const prefetch = () => void queryClient.prefetchQuery(runsQuery(org.org_id));
   return (
-    <Stack gap={0}>
-      <Group gap={4} wrap="nowrap">
-        {icon}
-        <Text fz="xl" fw={650} lh={1.2}>
-          {value}
-        </Text>
-      </Group>
-      <Text fz="xs" c="dimmed">
-        {label}
-      </Text>
-    </Stack>
-  );
-}
-
-function CompanyCard({ org }: { org: OrganizationSummary }) {
-  return (
-    <Card
-      component={Link}
+    <Link
       to={`/orgs/${encodeURIComponent(org.org_id)}`}
-      withBorder
-      padding="lg"
-      radius="md"
-      className="pw-clickable pw-card-link"
-      onMouseEnter={() => void queryClient.prefetchQuery(runsQuery(org.org_id))}
-      onFocus={() => void queryClient.prefetchQuery(runsQuery(org.org_id))}
+      className={`pw-tile${org.cover_url ? ' pw-tile--photo' : ''}`}
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
     >
-      <Group gap="sm" wrap="nowrap" align="flex-start">
-        <ThemeIcon size={40} radius="md" variant="light">
-          <IconBuildingCommunity size={22} />
-        </ThemeIcon>
-        <Stack gap={2} style={{ minWidth: 0 }}>
-          <Title order={3} fz="lg" lh={1.3}>
-            {org.name}
-          </Title>
-          <Text fz="sm" c="dimmed" lineClamp={1}>
+      {org.cover_url && (
+        <>
+          <img className="pw-tile__img" src={org.cover_url} alt="" loading="lazy" />
+          <div className="pw-tile__scrim" />
+        </>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <h2 className="pw-tile__title">{org.name}</h2>
+          <p className="pw-tile__blurb">
             {org.last_survey_at
-              ? `Last survey ${fmtDate(org.last_survey_at)} (${fmtRelative(org.last_survey_at)}) · ${org.last_site_name}`
-              : 'No surveys yet'}
-          </Text>
-        </Stack>
-      </Group>
-      <SimpleGrid cols={3} mt="lg" spacing="xs">
-        <Stat label={org.run_count === 1 ? 'Survey' : 'Surveys'} value={org.run_count} />
-        <Stat label={org.finding_count === 1 ? 'Finding' : 'Findings'} value={org.finding_count} />
-        <Stat
+              ? `Latest survey: ${org.last_site_name}, ${fmtDate(org.last_survey_at)} (${fmtRelative(org.last_survey_at)}).`
+              : 'No surveys uploaded yet.'}
+          </p>
+        </div>
+        <IconArrowUpRight size={22} stroke={1.5} style={{ flex: 'none', opacity: 0.7 }} aria-hidden />
+      </div>
+      <div className="pw-tile__foot pw-figures">
+        <Figure label={org.run_count === 1 ? 'Survey' : 'Surveys'} value={org.run_count} />
+        <Figure label={org.finding_count === 1 ? 'Finding' : 'Findings'} value={org.finding_count} />
+        <Figure
           label="High severity"
           value={org.high_severity_count}
-          icon={org.high_severity_count > 0 ? <IconAlertOctagon size={16} color="var(--pw-sev-high)" aria-hidden /> : undefined}
+          icon={org.high_severity_count > 0 ? <IconAlertOctagon size={14} color="var(--pw-sev-high)" aria-hidden /> : undefined}
         />
-      </SimpleGrid>
-    </Card>
+      </div>
+    </Link>
   );
 }
 
@@ -75,38 +59,55 @@ export default function CompaniesPage() {
     return (data ?? []).filter((o) => !needle || o.name.toLowerCase().includes(needle) || o.org_id.includes(needle));
   }, [data, q]);
 
+  const totals = useMemo(
+    () =>
+      (data ?? []).reduce(
+        (a, o) => ({ runs: a.runs + o.run_count, findings: a.findings + o.finding_count, high: a.high + o.high_severity_count }),
+        { runs: 0, findings: 0, high: 0 },
+      ),
+    [data],
+  );
+
   return (
     <>
       <PageHeader
-        crumbs={[]}
-        title="Companies"
-        subtitle="Choose a company to see its pavement surveys and findings."
+        crumbs={[{ label: 'Survey clients' }]}
+        title="Pavement findings, by client."
+        subtitle="Each company below commissions supervised drone surveys of its paved areas. Open one to see its survey runs, the defects found in each, and where the data was too weak to be sure."
         right={
-          (data?.length ?? 0) > 3 && (
-            <TextInput
-              placeholder="Search companies"
-              leftSection={<IconSearch size={16} />}
-              rightSection={
-                q ? (
-                  <IconX size={16} style={{ cursor: 'pointer' }} onClick={() => setQ('')} aria-label="Clear search" />
-                ) : null
-              }
-              value={q}
-              onChange={(e) => setQ(e.currentTarget.value)}
-              w={{ base: '100%', sm: 280 }}
-              aria-label="Search companies"
-            />
+          data &&
+          data.length > 0 && (
+            <>
+              <div className="pw-figures" style={{ color: 'var(--pw-ink)' }}>
+                <Figure label={data.length === 1 ? 'Company' : 'Companies'} value={data.length} />
+                <Figure label="Surveys" value={totals.runs} />
+                <Figure label="Findings" value={totals.findings} />
+              </div>
+              {data.length > 3 && (
+                <TextInput
+                  className="pw-field"
+                  placeholder="Search companies"
+                  leftSection={<IconSearch size={18} />}
+                  rightSection={
+                    q ? <IconX size={16} style={{ cursor: 'pointer' }} onClick={() => setQ('')} aria-label="Clear search" /> : null
+                  }
+                  value={q}
+                  onChange={(e) => setQ(e.currentTarget.value)}
+                  aria-label="Search companies"
+                />
+              )}
+            </>
           )
         }
       />
       {error ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : isPending ? (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} h={190} radius="md" />
+        <div className="pw-stagger">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} />
           ))}
-        </SimpleGrid>
+        </div>
       ) : data.length === 0 ? (
         <EmptyBlock icon={<IconBuildingCommunity size={22} />} title="No companies yet">
           Companies appear here as soon as the processing pipeline uploads their first survey. For test data, run
@@ -115,11 +116,11 @@ export default function CompaniesPage() {
       ) : shown.length === 0 ? (
         <EmptyBlock icon={<IconSearch size={22} />} title={`No company matches "${q}"`} />
       ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
+        <div className="pw-stagger">
           {shown.map((o) => (
-            <CompanyCard key={o.org_id} org={o} />
+            <CompanyTile key={o.org_id} org={o} />
           ))}
-        </SimpleGrid>
+        </div>
       )}
     </>
   );

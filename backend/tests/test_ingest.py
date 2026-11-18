@@ -35,6 +35,10 @@ def test_full_flow_and_portal_reads(client, payload):
     assert runs[0]["counts_by_type"] == {"pothole": 1, "crack": 1}
     assert runs[0]["data_warning_count"] == 1
     assert runs[0]["findings_with_warnings"] == 1
+    # Tile cover: the most severe finding's frame, at preview size, actually served.
+    assert runs[0]["cover_url"].startswith("/files/")
+    assert client.get(runs[0]["cover_url"]).status_code == 200
+    assert orgs[0]["cover_url"] == runs[0]["cover_url"]
 
     run = client.get("/api/v1/orgs/test-co/runs/PW-TEST-0001").json()
     assert run["data_warnings"][0]["code"] == "NOT_SCANNED"
@@ -48,6 +52,9 @@ def test_full_flow_and_portal_reads(client, payload):
     d = client.get("/api/v1/orgs/test-co/runs/PW-TEST-0001/findings/F-0001").json()
     assert d["prev_finding_id"] is None and d["next_finding_id"] == "F-0002"
     assert d["lat"] == 43.6501 and d["lon"] == -79.3798
+    high_id = next(f["finding_id"] for f in findings if f["severity"] == "high")
+    high = client.get(f"/api/v1/orgs/test-co/runs/PW-TEST-0001/findings/{high_id}").json()
+    assert runs[0]["cover_url"] in {ev["preview_url"] for ev in high["evidence"]}
     raw = d["evidence"][0]
     assert raw["is_image"] and raw["width_px"] == 640 and raw["bounding_boxes"][0]["bbox"] == [100, 50, 300, 200]
     # Small image: preview is the original. Files are actually served.

@@ -1,20 +1,15 @@
 import {
-  Alert,
   Badge,
   Button,
   Chip,
-  Grid,
   Group,
-  Paper,
   ScrollArea,
   SegmentedControl,
-  SimpleGrid,
   Skeleton,
   Stack,
   Switch,
   Table,
   Text,
-  Title,
   Tooltip,
 } from '@mantine/core';
 import { useDocumentTitle, useMediaQuery } from '@mantine/hooks';
@@ -92,7 +87,7 @@ function FindingRow({
     <Link
       ref={rowRef}
       to={to}
-      className="pw-row pw-clickable"
+      className="pw-ledger-row pw-findrow"
       data-active={active}
       onMouseEnter={() => {
         onHover(f.finding_id);
@@ -104,15 +99,6 @@ function FindingRow({
         prefetch();
       }}
       onBlur={() => onHover(null)}
-      style={{
-        display: 'flex',
-        gap: 12,
-        alignItems: 'center',
-        padding: '8px 12px',
-        color: 'inherit',
-        textDecoration: 'none',
-        borderBottom: '1px solid var(--mantine-color-default-border)',
-      }}
     >
       {f.thumb_url ? (
         <img src={f.thumb_url} alt="" className="pw-thumb" loading="lazy" />
@@ -124,7 +110,7 @@ function FindingRow({
       <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
         <Group gap={8} wrap="nowrap" justify="space-between">
           <DefectLabel type={f.defect_type} subtype={f.subtype} />
-          <Text fz="xs" c="dimmed" ff="monospace" style={{ flex: 'none' }}>
+          <Text c="dimmed" className="pw-mono" style={{ flex: 'none', fontSize: 12 }}>
             {f.finding_id}
           </Text>
         </Group>
@@ -176,7 +162,7 @@ function RunDetails({ run }: { run: RunDetail }) {
             <Table.Td c="dimmed" w={160} pl={0}>
               {k}
             </Table.Td>
-            <Table.Td pr={0} style={{ wordBreak: 'break-word' }}>
+            <Table.Td pr={0} className="pw-mono" style={{ wordBreak: 'break-word' }}>
               {v}
             </Table.Td>
           </Table.Tr>
@@ -292,20 +278,19 @@ export default function RunDetailPage() {
       />
 
       {r?.status === 'incomplete' && (
-        <Alert
-          color="yellow"
-          variant="light"
-          icon={<IconAlertTriangle color="var(--pw-status-warning)" />}
-          title="Incomplete survey"
-          mb="md"
-          styles={{ title: { color: 'var(--mantine-color-text)' }, message: { color: 'var(--mantine-color-text)' } }}
-        >
-          This flight did not cover the whole planned area. Findings are shown for the scanned part only. Unscanned
-          areas are outlined on the map and listed under Survey data quality.
-        </Alert>
+        <div className="pw-tile pw-banner" role="note" style={{ marginBottom: 'var(--pw-gutter)' }}>
+          <IconAlertTriangle size={22} color="var(--pw-status-warning)" aria-hidden />
+          <h2 className="pw-tile__title" style={{ fontSize: 17 }}>
+            Incomplete survey
+          </h2>
+          <Text className="pw-dim" maw="80ch">
+            This flight did not cover the whole planned area. Findings are shown for the scanned part only. Unscanned
+            areas are outlined on the map and listed under Survey data quality.
+          </Text>
+        </div>
       )}
 
-      <SimpleGrid cols={{ base: 2, md: 4 }} mb="md">
+      <div className="pw-grid pw-statstrip" style={{ marginBottom: 'calc(var(--pw-gutter) * 1.25)' }}>
         {r && findings.data ? (
           <>
             <StatTile label="Findings" value={all.length} hint={`${presentTypes.length} defect type${presentTypes.length === 1 ? '' : 's'}`} />
@@ -324,18 +309,15 @@ export default function RunDetailPage() {
             <StatTile label="Survey data notes" value={r.data_warning_count} hint="e.g. areas not scanned" />
           </>
         ) : (
-          [0, 1, 2, 3].map((i) => <Skeleton key={i} h={98} radius="md" />)
+          [0, 1, 2, 3].map((i) => <Skeleton key={i} h={168} />)
         )}
-      </SimpleGrid>
+      </div>
 
       {/* Filters: one row above the map and list, applied to both */}
       {all.length > 0 && (
-        <Paper withBorder radius="md" p="sm" mb="md">
-          <Group gap="lg" wrap="wrap" align="center" style={{ rowGap: 10 }}>
-            <Group gap={8} wrap="wrap">
-              <Text fz="sm" fw={600}>
-                Type
-              </Text>
+        <div className="pw-filterbar" role="group" aria-label="Filter findings">
+            <div className="pw-filterbar__group">
+              <span className="pw-eyebrow">Type</span>
               <Chip.Group multiple value={filters.types} onChange={(v) => filters.set('type', v)}>
                 <Group gap={6} wrap="wrap">
                   {presentTypes.map((t) => (
@@ -345,11 +327,9 @@ export default function RunDetailPage() {
                   ))}
                 </Group>
               </Chip.Group>
-            </Group>
-            <Group gap={8} wrap="wrap">
-              <Text fz="sm" fw={600}>
-                Severity
-              </Text>
+            </div>
+            <div className="pw-filterbar__group">
+              <span className="pw-eyebrow">Severity</span>
               <Chip.Group multiple value={filters.sevs} onChange={(v) => filters.set('sev', v)}>
                 <Group gap={6} wrap="wrap">
                   {[...SEVERITIES, 'none' as const]
@@ -361,7 +341,7 @@ export default function RunDetailPage() {
                     ))}
                 </Group>
               </Chip.Group>
-            </Group>
+            </div>
             <Switch
               size="sm"
               label="Only with warnings"
@@ -373,15 +353,14 @@ export default function RunDetailPage() {
                 Clear filters
               </Button>
             )}
-            <Text fz="sm" c="dimmed" ml="auto">
-              Showing {shown.length} of {all.length}
+            <Text c="dimmed" ml="auto" className="pw-mono">
+              {shown.length} / {all.length} shown
             </Text>
-          </Group>
-        </Paper>
+        </div>
       )}
 
-      <Grid gap="md">
-        <Grid.Col span={{ base: 12, lg: 7 }}>
+      <div className="pw-grid pw-split-7-5">
+        <div style={{ minWidth: 0 }}>
           {r && findings.data ? (
             <>
               <SurveyMap
@@ -396,23 +375,21 @@ export default function RunDetailPage() {
               <MapLegend showApprox={anyApprox} />
             </>
           ) : (
-            <Skeleton h={panelHeight} radius="md" />
+            <Skeleton h={panelHeight} />
           )}
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, lg: 5 }}>
+        </div>
+        <div style={{ minWidth: 0 }}>
           {!findings.data ? (
-            <Skeleton h={panelHeight} radius="md" />
+            <Skeleton h={panelHeight} />
           ) : all.length === 0 ? (
             <EmptyBlock icon={<IconMoodEmpty size={22} />} title="No defects detected in this survey">
               Check the survey data notes below: areas that were not scanned, or scanned with poor data, can still
               contain defects.
             </EmptyBlock>
           ) : (
-            <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>
-              <Group justify="space-between" px="md" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}>
-                <Title order={2} fz="md">
-                  Findings
-                </Title>
+            <section className="pw-tile pw-tile--flush" aria-label="Findings">
+              <Group justify="space-between" px="var(--pw-tile-pad)" py={20} wrap="nowrap">
+                <h2 className="pw-tile__title">Findings</h2>
                 <SegmentedControl
                   size="xs"
                   value={filters.sort}
@@ -424,7 +401,7 @@ export default function RunDetailPage() {
                   aria-label="Sort findings"
                 />
               </Group>
-              <ScrollArea h={panelHeight - 50} type="auto" offsetScrollbars={false}>
+              <ScrollArea h={panelHeight - 76} type="auto" offsetScrollbars={false}>
                 {shown.length === 0 ? (
                   <Stack align="center" p="xl" gap="xs">
                     <Text fz="sm" c="dimmed">
@@ -455,35 +432,42 @@ export default function RunDetailPage() {
                   })
                 )}
               </ScrollArea>
-            </Paper>
+            </section>
           )}
-        </Grid.Col>
-      </Grid>
+        </div>
+      </div>
 
       {r && findings.data && (
-        <SimpleGrid cols={{ base: 1, md: 3 }} mt="lg" spacing="md">
-          <Paper withBorder radius="md" p="md">
-            <Title order={2} fz="md" mb="sm">
-              Defect types
-            </Title>
+        <div className="pw-grid pw-split-5-7" style={{ marginTop: 'calc(var(--pw-gutter) * 1.5)' }}>
+          <section className="pw-tile" style={{ alignSelf: 'start' }}>
+            <div className="pw-tile__head">
+              <div>
+                <h2 className="pw-tile__title">Defect types</h2>
+                <p className="pw-tile__blurb">Click a row to filter the map and list.</p>
+              </div>
+            </div>
             <TypeBarList counts={typeCounts} selected={filters.types} onToggle={toggleType} />
-          </Paper>
-          <Paper withBorder radius="md" p="md">
-            <Title order={2} fz="md" mb={4}>
-              Survey data quality
-            </Title>
-            <Text fz="xs" c="dimmed" mb="sm">
-              Where the data was too weak to be sure, "no findings" does not mean "no defects".
-            </Text>
-            <DataWarningsList warnings={r.data_warnings} />
-          </Paper>
-          <Paper withBorder radius="md" p="md">
-            <Title order={2} fz="md" mb="xs">
-              Survey details
-            </Title>
-            <RunDetails run={r} />
-          </Paper>
-        </SimpleGrid>
+          </section>
+          <div className="pw-stack">
+            <section className="pw-tile pw-tile--raised">
+              <div className="pw-tile__head">
+                <div>
+                  <h2 className="pw-tile__title">Survey data quality</h2>
+                  <p className="pw-tile__blurb">
+                    Where the data was too weak to be sure, &ldquo;no findings&rdquo; does not mean &ldquo;no defects&rdquo;.
+                  </p>
+                </div>
+              </div>
+              <DataWarningsList warnings={r.data_warnings} />
+            </section>
+            <section className="pw-tile">
+              <div className="pw-tile__head">
+                <h2 className="pw-tile__title">Survey details</h2>
+              </div>
+              <RunDetails run={r} />
+            </section>
+          </div>
+        </div>
       )}
     </>
   );
