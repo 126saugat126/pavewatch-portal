@@ -15,6 +15,7 @@ def settings(tmp_path) -> Settings:
         database_url=f"sqlite:///{(tmp_path / 'test.db').as_posix()}",
         storage_dir=tmp_path / "files",
         ingest_api_key="",
+        report_basemap=False,
     )
 
 

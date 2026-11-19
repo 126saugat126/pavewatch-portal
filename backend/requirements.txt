@@ -5,11 +5,14 @@ pydantic-settings>=2.6
 SQLAlchemy>=2.0.36,<2.1
 alembic>=1.14
 Pillow>=11.0
+reportlab>=4.2          # PDF reports
+tzdata>=2024.1          # time zones for report dates (Windows has no system tz database)
 
 # dev / tests
 pytest>=8.3
 httpx>=0.27
 jsonschema>=4.23
+pypdf>=5.0               # reads generated reports in tests
 
 # synthetic data generator (tools/synthetic)
 numpy>=2.1

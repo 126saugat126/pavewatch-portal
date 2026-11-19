@@ -1,6 +1,6 @@
 """File storage behind a tiny interface.
 
-Today: local disk. Planned: Google Cloud Storage (implement the same four
+Today: local disk. Planned: Google Cloud Storage (implement the same five
 methods in a ``GCSStorage`` class and select it with ``PW_STORAGE_BACKEND=gcs``).
 Keys are always forward-slash paths such as ``northgate-roads/PW-.../<ingestion>/F-0001_raw.jpg``.
 """
@@ -16,6 +16,7 @@ from app.config import Settings
 class Storage(Protocol):
     def put(self, key: str, data: bytes, content_type: str) -> None: ...
     def exists(self, key: str) -> bool: ...
+    def read(self, key: str) -> bytes: ...
     def delete_prefix(self, prefix: str) -> None: ...
     def url(self, key: str) -> str: ...
 
@@ -41,6 +42,9 @@ class LocalStorage:
 
     def exists(self, key: str) -> bool:
         return self._path(key).is_file()
+
+    def read(self, key: str) -> bytes:
+        return self._path(key).read_bytes()
 
     def delete_prefix(self, prefix: str) -> None:
         p = self._path(prefix)

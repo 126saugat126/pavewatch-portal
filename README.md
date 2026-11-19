@@ -4,8 +4,8 @@ Web portal for the **PaveWatch** capstone project (team Aerovengers). It covers 
 
 Users pick a **company**, then a **survey run**, then browse its **findings** (potholes, cracks, depressions…) on a map and in a list. Each finding opens a detail page with its images, bounding boxes, measurements and location. Data-quality warnings are shown throughout, so users can tell "no defects found" apart from "not enough data to know".
 
-| Companies | Survey run | Finding |
-|---|---|---|
+| Companies                                    | Survey run                              | Finding                                         |
+| -------------------------------------------- | --------------------------------------- | ----------------------------------------------- |
 | ![Companies](docs/screenshots/companies.jpg) | ![Survey run](docs/screenshots/run.jpg) | ![Finding detail](docs/screenshots/finding.jpg) |
 
 ---
@@ -42,6 +42,7 @@ npm run dev                                                   # http://localhost
 # demo data (third terminal, backend running)
 backend/.venv/Scripts/python tools/synthetic/generate.py
 ```
+
 </details>
 
 ### Single-server mode
@@ -75,20 +76,29 @@ python tools/uploader/pavewatch_upload.py samples/sample_run/payload.geojson --u
             Mantine UI · TanStack Query · MapLibre (OpenStreetMap / Esri imagery)
 ```
 
-| Area | Choice | Why |
-|---|---|---|
-| Backend | Python, FastAPI, Pydantic v2 | Same language as the pipeline; one schema definition drives validation, API docs and the JSON Schema |
-| Database | SQLAlchemy 2 + Alembic, SQLite locally | Only portable types, so Cloud SQL for PostgreSQL is a `PW_DATABASE_URL` change |
-| Files | `Storage` interface (`put / exists / delete_prefix / url`), local disk | A `GCSStorage` class with the same four methods moves images to Cloud Storage |
-| Frontend | React 19, TypeScript, Vite, Mantine 9 | Accessible components, light/dark mode |
-| Data fetching | TanStack Query | Caching and hover/neighbour prefetching make navigation instant |
-| Maps | MapLibre GL | Provider code lives in one file (`frontend/src/components/map/basemap.ts`) for an easy swap to Google Maps |
+| Area          | Choice                                                                     | Why                                                                                                          |
+| ------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Backend       | Python, FastAPI, Pydantic v2                                               | Same language as the pipeline; one schema definition drives validation, API docs and the JSON Schema         |
+| Database      | SQLAlchemy 2 + Alembic, SQLite locally                                     | Only portable types, so Cloud SQL for PostgreSQL is a `PW_DATABASE_URL` change                             |
+| Files         | `Storage` interface (`put / exists / delete_prefix / url`), local disk | A `GCSStorage` class with the same four methods moves images to Cloud Storage                              |
+| Frontend      | React 19, TypeScript, Vite, Mantine 9                                      | Accessible components, light/dark mode                                                                       |
+| Data fetching | TanStack Query                                                             | Caching and hover/neighbour prefetching make navigation instant                                              |
+| Maps          | MapLibre GL                                                                | Provider code lives in one file (`frontend/src/components/map/basemap.ts`) for an easy swap to Google Maps |
 
 ### How ingestion works
 
 1. `POST /api/v1/ingest/runs` validates the whole payload and reports every problem with its path. Rejections are logged.
 2. `PUT …/files/{file}` stores each evidence file. Images are checked against their declared size and bounding boxes, and a 480 px thumbnail and a 1600 px preview are generated so the UI stays fast.
 3. `POST …/complete` publishes everything in one database transaction. Until then nothing is visible. With `?replace=true`, a re-processed run swaps in atomically and the old files are deleted.
+
+### PDF reports
+
+The survey page has an **Export survey report (PDF)** button. Each open finding has a **PDF** button.
+
+- **Survey report:** a summary page (run details, key figures, key points), an overview map with numbered markers, a breakdown by type and severity, survey data quality, a findings index (most severe first, IDs link to their pages), then one page per finding.
+- **Finding report:** a single page with severity, facts, measurements, a location map, quality warnings, and the evidence images with bounding boxes drawn in.
+
+The backend builds both (`GET /api/v1/orgs/{org}/runs/{run}/report.pdf` and `.../findings/{finding}/report.pdf`). Dates use the viewer's time zone, sent as `?tz=`. Map tiles are cached in `backend/data/tile-cache/`.
 
 ### Project layout
 
@@ -97,7 +107,8 @@ backend/
   app/
     api/            HTTP routes: ingest.py (data sender), portal.py (frontend)
     schemas/        ingest.py = the data contract; portal.py = API responses
-    services/       ingest.py (3-step flow), portal.py (read queries)
+    services/       ingest.py (3-step flow), portal.py (read queries), reports.py (PDF exports)
+    reports/        PDF reports: pdf.py (layout, ReportLab), maps.py (static maps), images.py (boxes drawn in)
     db/             models.py (tables), session.py, migrate.py
     storage.py      file storage interface + local implementation
     config.py       settings (env vars PW_*)
@@ -122,13 +133,15 @@ scripts/            setup.ps1, dev.ps1
 
 Environment variables (or `backend/.env`; see [backend/.env.example](backend/.env.example)):
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PW_DATABASE_URL` | SQLite file in `backend/data/` | Any SQLAlchemy URL, e.g. `postgresql+psycopg://…` |
-| `PW_STORAGE_DIR` | `backend/data/files` | Where evidence files are stored |
-| `PW_INGEST_API_KEY` | *(empty: no key)* | Require `X-API-Key` on ingestion endpoints |
-| `PW_MAX_UPLOAD_MB` | `50` | Max size per evidence file |
-| `PW_CORS_ORIGINS` | `["http://localhost:5173", …]` | Allowed browser origins in dev |
+| Variable               | Default                           | Purpose                                                                                             |
+| ---------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `PW_DATABASE_URL`    | SQLite file in `backend/data/`  | Any SQLAlchemy URL, e.g. `postgresql+psycopg://…`                                                |
+| `PW_STORAGE_DIR`     | `backend/data/files`            | Where evidence files are stored                                                                     |
+| `PW_INGEST_API_KEY`  | *(empty: no key)*               | Require `X-API-Key` on ingestion endpoints                                                        |
+| `PW_MAX_UPLOAD_MB`   | `50`                            | Max size per evidence file                                                                          |
+| `PW_REPORT_BASEMAP`  | `true`                          | Draw OpenStreetMap streets under PDF report maps. `false`, or no network, gives a plain site plan |
+| `PW_REPORT_TILE_URL` | OSM standard tiles                | Tile server for PDF maps (use a provider with a usage plan in production)                           |
+| `PW_CORS_ORIGINS`    | `["http://localhost:5173", …]` | Allowed browser origins in dev                                                                      |
 
 To reset all local data, stop the backend and delete `backend/data/`. The database is recreated on the next start.
 

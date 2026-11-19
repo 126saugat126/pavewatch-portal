@@ -1332,6 +1332,8 @@ a.pw-tile--photo:hover .pw-tile__img {
 .pw-workspace {
   --pw-work-h: clamp(560px, calc(100vh - 210px), 780px);
   --pw-map-h: var(--pw-work-h);
+  /* Findings column (right) is wider than the map (left): ~46% map / 54% findings */
+  grid-template-columns: minmax(0, 11fr) minmax(0, 13fr);
 }
 .pw-work {
   position: relative;
@@ -1361,6 +1363,7 @@ a.pw-tile--photo:hover .pw-tile__img {
   .pw-workspace {
     --pw-work-h: 460px;
     --pw-map-h: 420px;
+    grid-template-columns: minmax(0, 1fr);
   }
   .pw-work[data-open] {
     height: min(88vh, 820px);

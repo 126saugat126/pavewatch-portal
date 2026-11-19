@@ -8,6 +8,7 @@ import { findingQuery, prefetchFinding } from '../api/queries';
 import type { FindingDetail, RunDetail } from '../api/types';
 import { Glyph, SeverityBadge } from './Badges';
 import { EvidenceStrip, ImageViewer } from './ImageViewer';
+import { ExportPdfButton } from './ExportPdfButton';
 import { MiniMap } from './map/MiniMap';
 import { QualityWarningsList } from './Warnings';
 import { SOURCE_LABEL, defectTitle, humanize } from '../lib/defects';
@@ -284,6 +285,16 @@ export function FindingPanel({
           All findings
         </Button>
         <Group gap="xs" wrap="nowrap">
+          <ExportPdfButton
+            size="sm"
+            path={`/orgs/${encodeURIComponent(orgId)}/runs/${encodeURIComponent(runId)}/findings/${encodeURIComponent(findingId)}/report.pdf`}
+            fallbackName={`PaveWatch_${runId}_${findingId}.pdf`}
+            label="PDF"
+            busyLabel="PDF…"
+            title="Export this finding as a PDF report"
+            aria-label={`Export finding ${findingId} as PDF`}
+            mr="xs"
+          />
           {step(prevId, 'Previous finding', <IconChevronLeft size={18} />)}
           <Text fz="sm" c="dimmed" className="pw-tabular" style={{ whiteSpace: 'nowrap', minWidth: 64, textAlign: 'center' }} aria-live="polite">
             {pos ? `${pos.n} of ${pos.of}` : '…'}

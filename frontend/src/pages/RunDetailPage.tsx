@@ -29,6 +29,7 @@ import type { FindingListItem, RunDetail } from '../api/types';
 import { DefectLabel, RunStatus, SeverityInline } from '../components/Badges';
 import { StatTile, TypeBarList } from '../components/Charts';
 import { MapLegend, SurveyMap } from '../components/map/SurveyMap';
+import { ExportPdfButton } from '../components/ExportPdfButton';
 import { FindingPanel } from '../components/FindingPanel';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyBlock, ErrorState } from '../components/States';
@@ -337,6 +338,19 @@ export default function RunDetailPage() {
             </Group>
           )
         }
+        right={
+          r && (
+            <Group gap="xs">
+              {/* API paths below /api/v1 mirror the page routes */}
+              <ExportPdfButton
+                path={`${base}/report.pdf`}
+                fallbackName={`PaveWatch_${r.run_id}_survey_report.pdf`}
+                label="Export survey report (PDF)"
+                title="Summary, overview map and a page for every finding"
+              />
+            </Group>
+          )
+        }
       />
 
       {r?.status === 'incomplete' && (
@@ -422,7 +436,7 @@ export default function RunDetailPage() {
       )}
 
       {/* Workspace: the map and the findings list / open finding share one selection */}
-      <div className="pw-grid pw-split-7-5 pw-workspace">
+      <div className="pw-grid pw-workspace">
         <div style={{ minWidth: 0 }}>
           {r && findings.data ? (
             <>

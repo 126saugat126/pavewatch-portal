@@ -18,6 +18,7 @@ from app.api import ingest, portal
 from app.config import BACKEND_DIR, Settings, get_settings
 from app.db.migrate import upgrade_to_head
 from app.db.session import make_engine, make_sessionmaker
+from app.reports.maps import TileSource
 from app.services.errors import ApiProblem
 from app.services.ingest import record_rejection
 from app.storage import LocalStorage, make_storage
@@ -64,6 +65,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = make_engine(settings.database_url)
     app.state.SessionLocal = make_sessionmaker(app.state.engine)
     app.state.storage = make_storage(settings)
+    app.state.tiles = (
+        TileSource(settings.report_tile_url, settings.report_tile_cache_dir) if settings.report_basemap else None
+    )
 
     app.add_middleware(
         CORSMiddleware,

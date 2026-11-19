@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     thumb_px: int = 480
     preview_px: int = 1600
 
+    # PDF reports: draw OpenStreetMap tiles under report maps. Without network access (or with this
+    # set to false) maps fall back to a plain site plan. Use a provider with a usage plan in production.
+    report_basemap: bool = True
+    report_tile_url: str = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    report_tile_cache_dir: Path = BACKEND_DIR / "data" / "tile-cache"
+
     # Frontend dev server origins allowed by CORS.
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 

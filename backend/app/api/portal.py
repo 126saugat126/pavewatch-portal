@@ -5,13 +5,17 @@ middleware/dependency can check the user's membership for ``org_id`` here
 without changing any URL.
 """
 
-from fastapi import APIRouter, Depends, Request
+from urllib.parse import quote
+
+from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas import portal as s
 from app.schemas.ingest_responses import ErrorResponse
 from app.services import portal as svc
+from app.services import reports as reports_svc
 
 router = APIRouter(prefix="/api/v1", tags=["Portal"], responses={404: {"model": ErrorResponse}})
 
@@ -45,3 +49,45 @@ def list_findings(org_id: str, run_id: str, request: Request, db: Session = Depe
 @router.get("/orgs/{org_id}/runs/{run_id}/findings/{finding_id}", summary="Full detail of one finding")
 def get_finding(org_id: str, run_id: str, finding_id: str, request: Request, db: Session = Depends(get_db)) -> s.FindingDetail:
     return svc.get_finding(db, request.app.state.storage, svc.get_organization(db, org_id), run_id, finding_id)
+
+
+# ----------------------------------------------------------------- PDF reports
+
+_PDF = {200: {"content": {"application/pdf": {}}, "description": "The report as a PDF file (download)."}}
+_TZ = Query(None, description="IANA time zone for dates in the report, e.g. America/Toronto. Default: UTC.")
+
+
+def _pdf(data: bytes, filename: str) -> Response:
+    return Response(
+        content=data,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=\"{filename}\"; filename*=UTF-8''{quote(filename)}",
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@router.get(
+    "/orgs/{org_id}/runs/{run_id}/report.pdf",
+    summary="Survey report (PDF): summary, map, breakdown and a page per finding",
+    response_class=Response,
+    responses=_PDF,
+)
+def run_report(org_id: str, run_id: str, request: Request, tz: str | None = _TZ, db: Session = Depends(get_db)):
+    st = request.app.state
+    return _pdf(*reports_svc.run_report(db, st.storage, st.tiles, svc.get_organization(db, org_id), run_id, tz))
+
+
+@router.get(
+    "/orgs/{org_id}/runs/{run_id}/findings/{finding_id}/report.pdf",
+    summary="Finding report (PDF): evidence, measurements, location and warnings",
+    response_class=Response,
+    responses=_PDF,
+)
+def finding_report(
+    org_id: str, run_id: str, finding_id: str, request: Request, tz: str | None = _TZ, db: Session = Depends(get_db)
+):
+    st = request.app.state
+    org = svc.get_organization(db, org_id)
+    return _pdf(*reports_svc.finding_report(db, st.storage, st.tiles, org, run_id, finding_id, tz))
