@@ -73,7 +73,6 @@ export default function CompaniesPage() {
       <PageHeader
         eyebrow="Survey clients"
         title="Pavement findings, by client."
-        subtitle="Each company below commissions supervised drone surveys of its paved areas. Open one to see its survey runs, the defects found in each, and where the data was too weak to be sure."
         right={
           data &&
           data.length > 0 && (

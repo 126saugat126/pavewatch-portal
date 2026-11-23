@@ -164,7 +164,7 @@ def make_finding(rng, idx: int, site: Site, t: datetime, x: float, y: float, run
         }
         severity = "high" if depth > 0.08 or w > 0.78 else "medium" if depth > 0.045 or w > 0.5 else "low"
         source = "fused" if lidar_ok else "image"
-        desc = f"Pothole about {w * 100:.0f} x {l * 100:.0f} cm, {depth * 100:.0f} mm deep. Edges ravelled; loose aggregate in the bowl."
+        desc = f"Pothole about {w * 100:.0f} x {l * 100:.0f} cm, {depth * 1000:.0f} mm deep. Edges ravelled; loose aggregate in the bowl."
         mag = depth
     elif dtype == "crack":
         subtype = str(rng.choice(["longitudinal", "transverse", "alligator", "block"], p=[0.35, 0.3, 0.2, 0.15]))
